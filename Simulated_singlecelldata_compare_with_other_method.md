@@ -1,8 +1,10 @@
-# 模拟monocyte数据
+# Construct the simulated data
 
-数据来自：
+The FACS-sorted bulk hematopoietic populations data come from：
 
 Interrogation of human hematopoiesis at single-cell and single-variant resolution
+
+***Nat Genet\*** (IF: 27.603; **Q1**). 2019 Apr;51(4):683-693. doi: 10.1038/s41588-019-0362-6. Epub 2019 Mar 11.
 
 ```R
 library(scDesign2)
