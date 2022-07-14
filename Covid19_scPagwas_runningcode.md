@@ -102,7 +102,7 @@ Bootstrap_P_Barplot(p_results=Pagwas$bootstrap_results$bp_value[-1],
 
 ```
 
-sub celltypes
+#### Run sub celltypes
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
@@ -151,10 +151,14 @@ save(Pagwas,file=paste0("scpagwas_severe_",i,j,".RData"))
 #### Integrate the result：
 
 ```R
+#severe
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
 i<-celltype[1]
-load("scpagwas_severe_",i,j,".RData")
-Pagwas_integrate <- merge_pagwas(Pagwas_list = list(Pagwas1,Pagwas2),n_topgenes = 1000)   
+load("scpagwas_severe_CD14+monocyte_1.RData")
+Pagwas1<-Pagwas
+load("scpagwas_severe_CD14+monocyte_2.RData")
+Pagwas_integrate <- merge_pagwas(Pagwas_list = list(Pagwas1,Pagwas),n_topgenes = 1000)   
+...
 
 
 load("/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_severe.v1.91.RData")
