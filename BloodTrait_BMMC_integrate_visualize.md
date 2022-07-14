@@ -1,8 +1,8 @@
-# 血细胞trait对BMMC结果综合展示可视化
+# BMMC for Blood traits Integrate visualization
 
-### 1.导入之前的结果,绘制tsne
+## visualization for BMMC
 
-meta数据和单细胞数据，1.7.3版本之前的结果需要计算top1000基因的得分
+### 1.load the result and 
 
 ```R
 library(Seurat)
@@ -17,19 +17,8 @@ setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
  suppressMessages(library(Seurat))
 library(org.Hs.eg.db)
 library(dplyr)
-pbmccells<-c("RBCcount","Plateletcount","eosinophilcount","basophilcount","LymphocytePercent","lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-#pbmccells<-c("basophilcount","LymphocytePercent")
-#Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
-
-#Single_data <- FindVariableFeatures(Single_data,nfeatures = 5000)
-#Single_data <- NormalizeData(Single_data, normalization.method = "LogNormalize", scale.factor = 10000)
-#Single_data <- ScaleData(Single_data)
-#Single_data <- RunPCA(object = Single_data, assay = "RNA", npcs = 50)
-#Single_data <- RunTSNE(object = Single_data,assay =  "RNA", reduction = "pca",dims = 1:50)
-#Single_data <- RunUMAP(object = Single_data, assay = "RNA", reduction = "pca",dims = 1:50)
-#save(Single_data,file = "/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data2.RData")
-#saveRDS(Single_data,file = "/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
-#load("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data2.RData")
+traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 
 pdf(file="Seu_Hema_seurat_TSNE.pdf",height=10,width=10)
 DimPlot(Pagwas,group.by="celltypes",reduction="tsne",pt.size=0.5,label = TRUE, repel=TRUE,label.size = 4)+ 
@@ -39,30 +28,24 @@ ggtitle("BMMC")+
         theme(aspect.ratio=1)
 dev.off()
 
-
 ```
 
-### 2.分别绘制不同trait的tsne
+### 2.tsne plot for different traits
 
 ```R
 i<-"Lymphocytecount2"
 i<-"monocytecount"
 i<-"MeanCorpusVolume"
 i<-"Hemoglobinconcen"
-i<-"RBCcount"
 
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i,"_Hema_bmmc_scPagwas_v1.9.RData"))
 
-#Pagwas<-sclm_anotherscore(Pagwas=Pagwas)
     all_fortify_can <- fortify.Seurat.tsne(Pagwas)
-#scPagwas.lm2topgenes.Score1
     p1<- ggplot() +
         geom_point(data = all_fortify_can,
                    aes(x = TSNE_1, y = TSNE_2,color =sclm_score), size = 0.2, alpha = 1) +
         umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             #midpoint = median(all_fortify_can$sclm_score)
-                              )+
+        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D")+
         theme(aspect.ratio=1) +
         theme(legend.text=element_markdown(size=14),
               legend.title=element_text(size=14)) +
@@ -86,38 +69,18 @@ load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i
         guides(colour = guide_legend(override.aes = list(size=3)))  +
         ggtitle(i)
 
-        pdf(file=paste0("TSNE.",i,".scPagwas.lmtopgenes.Score1.pdf"),width = 8, height = 8)
+        pdf(file=paste0("TSNE.",i,".scPagwas.topgenes.Score1.pdf"),width = 8, height = 8)
         print(p2)
         dev.off()
 
-p3<- ggplot() +
-        geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.lm2topgenes.Score1), size = 0.2, alpha = 1) +
-        umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             midpoint = median(all_fortify_can$scPagwas.lm2topgenes.Score1)
-                              )+
-        theme(aspect.ratio=1) +
-        theme(legend.text=element_markdown(size=14),
-              legend.title=element_text(size=14)) +
-        guides(colour = guide_legend(override.aes = list(size=3)))  +
-        ggtitle(i)
-
-        pdf(file=paste0("TSNE.",i,".scPagwas.lm2topgenes.Score1.pdf"),width = 8, height = 8)
-        print(p3)
-        dev.off()
-#}
-
 ```
 
-
-
-### 柱状图
+### 3.Barplot for scPagwas TRS score
 
 ```R
 setwd("E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize")
 ######################
-pbmccells2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
+traits2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
 
  celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
       "02_Early.Eryth" , "03_Late.Eryth" , "04_Early.Baso","08_GMP.Neut", 
@@ -137,7 +100,7 @@ celltypecolor<-c("FD5D5D","#FF8080","#FFC3C3","#FFCBCB",
     "#7C9473",
     "#AA8976"
 )
-for(i in pbmccells){
+for(i in traits){
     print(i)
     i<-"monocytecount"
  load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData")) 
@@ -146,7 +109,6 @@ p <- ggplot(gg_gsva2, aes(x = ImmuneCell, y =ssGsva_score,fill=cluster))+
 geom_boxplot(outlier.size = 0.6,alpha=0.6)+theme_classic()+
 theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1),legend.position = "top")+labs(x = "",y="",title=i)
     
-
     }
 
 library(ggplot2)
@@ -155,7 +117,7 @@ library(ggpubr)
 library(RColorBrewer)
 setwd("E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize")
 ######################
-pbmccells2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
+traits2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
 
 celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
                 "02_Early.Eryth" , "03_Late.Eryth" , "04_Early.Baso","08_GMP.Neut", 
@@ -196,7 +158,7 @@ i<-"MeanCorpusVolume"
   print(p)
   dev.off()
   
-##########scPagwas500_scdrs.raw_score点图
+##########scPagwas500_scdrs.raw_score
  a1<- tapply(meta.data$scPagwas1000_scdrs.raw_score, meta.data$celltypes, function(x){
     mean(x)
   })
@@ -228,7 +190,7 @@ i<-"MeanCorpusVolume"
  print(p2)
  dev.off()
 
-##########cell p value 百分比图
+##########cell p value percent plot
  meta.data$CellsrankPvalue<-p.adjust(meta.data$CellsrankPvalue,method = "bonferroni")
  a<- tapply(meta.data$CellsrankPvalue, meta.data$celltypes, function(x){
    sum(x<0.05)/length(x)
@@ -251,48 +213,7 @@ i<-"MeanCorpusVolume"
 
 ```
 
-### 淋巴count数据：
-
-```R
-load("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount2_Hema_bmmc_scPagwas_v1.7.3.RData") 
-library(Seurat)
-library(dplyr)
-library(patchwork)
-library(ggplot2)
-library(cowplot)
-library(stringr)
-library(ggtext)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
- library(scPagwas)
- suppressMessages(library(Seurat))
- 
-  #load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData")) 
-#Pagwas@misca
-scPagwas_topgenes <- names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation, decreasing = T),])[1:500]
-    Pagwas <- AddModuleScore(Pagwas, assay = "RNA", list(scPagwas_topgenes), name = c("scPagwas.top500.Score"))
-
-
-    all_fortify_can <- fortify.Seurat.tsne(Pagwas)
-save(all_fortify_can,file="all_fortify_can.RData")
-    p1<- ggplot() +
-        geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.top500.Score1), size = 0.2, alpha = 1) +
-        umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             midpoint = median(all_fortify_can$scPagwas.top500.Score1))+
-        theme(aspect.ratio=1) +
-        theme(legend.text=element_markdown(size=14),
-              legend.title=element_text(size=14)) +
-        guides(colour = guide_legend(override.aes = list(size=3)))  +
-        ggtitle("Lymphocytecount")
-
-        pdf(file="TSNE.Lymphocytecount2.scPagwas500.pdf",width = 8, height = 8)
-        print(p1)
-        dev.off()
-
-```
-
-### 淋巴3
+### 4 Lymphocyte：
 
 ```R
 load("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.7.3.RData") 
@@ -344,7 +265,7 @@ ggsave(p1,file="E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize/TSNE.Lymph
 
 ```
 
-### 淋巴3进行magma计算
+#### Lymphocyte run magma
 
 ```R
 i<-"Lymphocytecount3"
@@ -395,7 +316,7 @@ save(magma_genes,file=paste0(i,"_magma_genes.RData"))
 
 ```
 
-画图柱状图
+barp[lot]
 
 ```R
  celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
@@ -504,54 +425,11 @@ celltypecolor<-c("#CB181D","#D7403E","#E3695F","#EF9280",
 
 ```
 
+## visualization for pbmc
 
+### 1. PBMC Lymphocytecount
 
-### PBMC RBC
-
-```
-library(scPagwas)
- suppressMessages(library(Seurat))
- library(ggplot2)
-library(ggthemes)
-library(ggpubr)
-library(RColorBrewer)
-library(ggtext)
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc")
-load("RBCcount_pbmc_scPagwas_singlecell.RData")
-
-pdf(file="pbmc_seurat_TSNE.pdf",height=10,width=10)
-DimPlot(Pagwas,group.by="initial_clustering",reduction="umap",pt.size=0.5,label = TRUE, repel=TRUE,label.size = 4)+ 
-umap_theme()+ labs(x="UMAP",y="")+
-ggtitle("PBMC")+
-        scale_colour_manual(name = "initial_clustering", values = color_scanpy_viridis28) +
-        theme(aspect.ratio=1)
-dev.off()
-
-############打分 umap
-all_fortify_can <- fortify.Seurat.umap(Pagwas)
-
-#save(all_fortify_can,file="all_fortify_can.RData")
-    p1<- ggplot() +
-        geom_point(data = all_fortify_can,
-                   aes(x = UMAP_1, y = UMAP_2,color =scPagwas.topgenes.Score1), size = 0.2, alpha = 1) +
-        umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             midpoint = median(all_fortify_can$scPagwas.topgenes.Score1))+
-        theme(aspect.ratio=1) +
-        theme(legend.text=element_markdown(size=14),
-              legend.title=element_text(size=14)) +
-        guides(colour = guide_legend(override.aes = list(size=3)))  +
-        ggtitle("RBCcount pbmc")
-
-        pdf(file="pbmc.Umap.RBCcount.scPagwas1000.pdf",width = 8, height = 8)
-        print(p1)
-        dev.off()
-```
-
-### PBMC Lymphocytecount
-
-```
+```R
 library(scPagwas)
  suppressMessages(library(Seurat))
  library(ggplot2)
@@ -579,9 +457,9 @@ all_fortify_can <- fortify.Seurat.umap(Pagwas)
         dev.off()
 ```
 
-### PBMC Hemoglobinconcen
+### 2.PBMC Hemoglobinconcen
 
-```
+```R
 library(scPagwas)
  suppressMessages(library(Seurat))
  library(ggplot2)
@@ -610,7 +488,7 @@ all_fortify_can <- fortify.Seurat.umap(Pagwas)
         dev.off()
 ```
 
-### MeanCorpusVolume
+### 3.MeanCorpusVolume
 
 ```
 library(scPagwas)
@@ -675,9 +553,9 @@ dev.off()
 
 ```
 
-### 热图：得分结果的整合
+## Integrate Pheatmap
 
-#### 基于1.7.3版本得结果整合1.9.1结果
+change the version of result ,v1.7 to b1.9
 
 ```R
 library(Seurat)
@@ -692,34 +570,28 @@ library(ggtext)
  suppressMessages(library(Seurat))
 library(org.Hs.eg.db)
 library(dplyr)
-pbmccells<-c("RBCcount","Plateletcount","basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+traits<-c("RBCcount","Plateletcount","basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
 
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
-lapply(pbmccells[c(1,3,4,6:12)],function(i){
+lapply(traits[c(1,3,4,6:12)],function(i){
    load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.7.RData"))   
 Pagwas<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000) 
-    save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
+  save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
 })
-
-
-
-
 ```
 
-#### 构建打分矩阵并且画图
-
-承接上面结果
+### Construct a score matrix
 
 ```R
-i<-"RBCcount"
+
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))  
 
-score_df<-lapply(pbmccells,function(i){    load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))   
+score_df<-lapply(traits,function(i){    load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))   
 return(Pagwas$scPagwas.topgenes.Score1)
 })
 
 score_df<-as.data.frame(score_df)
-colnames(score_df)<-pbmccells
+colnames(score_df)<-traits
 score_df$celltypes<-Pagwas$celltypes
 save(score_df,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/BMMC_scPagwas_topgene_score_df.RData")
 
@@ -777,7 +649,7 @@ dev.off()
 
 
 
-## 子函数：
+## sub-function
 
 ```R
 

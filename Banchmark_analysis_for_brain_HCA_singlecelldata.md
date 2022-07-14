@@ -1,14 +1,14 @@
-# scPagwas多疾病多方法banchmark可视化分析
+# Multiple disease traits for scPagwas banchmark
 
-## 1.读取脑部单细胞数据计算的四种方法的结果
+immune-/metabolism-related diseases/traits
 
-所有疾病：
+brain-related diseases
 
 c("MDD","ADHD","ASD","PD","BID","EP","Focal_EP","Generalized_EP","Juvenile_EP","Migraine","Multiple_sclerosis","smokingCessation","OpennessToExperence","Happiness","CognitivePerformance","SubjectWellBeing","BMI","WHR","WC","Obesity","TC","LDL","HDL","IBD","PBC","CoeliacDisease","T1D","DBP_EastAsian","DBP_European","PR_EastAsian","SBP","CAD","T2D","UlcerativeColitis","AD")
 
-### 1.1.四个方法的结果地址以及结果组成形式
+## 1. The result for four methods
 
-#### 1.scPagwas ：
+#### 1.1 scPagwas ：
 
 /share/pub/dengcy/GWAS_Multiomics/banchmarkresult/scPgwas/
 
@@ -38,7 +38,7 @@ save(scPagwas_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/s
 
 ```
 
-#### 2.magma 
+#### 1.2.magma 
 
 地址：/share/pub/dengcy/Singlecell/COVID19/MAGMA
 
@@ -66,7 +66,7 @@ names(magma_HCA_list)<-ds
 save(magma_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/magma_HCA_list.RData")
 ```
 
-#### 3.rolypoly
+#### 1.3.rolypoly
 
 /share2/pub/jiangdp/jiangdp/COVID/rolypoly/
 
@@ -94,7 +94,7 @@ names(rolypoly_HCA_list)<-ds
 save(rolypoly_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/rolypoly_HCA_list.RData")
 ```
 
-#### 4.ldsc
+#### 1.4.ldsc
 
 软件地址：/share2/pub/zhenggw/zhenggw/anaconda3/envs/ldsc/
 
@@ -145,7 +145,7 @@ write.csv(ldsc_hca_p,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/lds
 
 ```
 
-## 小鼠脑细胞数据的多疾病可视化分析：整体大图
+## 2. Visualization for integrate results
 
 ```R
 setwd("E:/OneDrive/GWAS_Multiomics/banchmarkresult")
@@ -161,7 +161,6 @@ scPagwas_brain_p<-as.data.frame(lapply(scPagwas_results_list,function(df){
   return(a)
 }))
 #
-
 rolypoly_brain_p<-as.data.frame(lapply(rolypoly_brain_list,function(df){
   a<- -log2(df$bp_value)
   a[which(a<4.32)]<-0
@@ -347,7 +346,5 @@ tapply(1:nrow(rdf),factor(rdf$types),function(x){
 })
 
 ```
-![hca_banchmark_scPagwas](FA29BE9C406B443287B41FB4BE690BE8)
-
 
 

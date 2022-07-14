@@ -32,7 +32,7 @@ saveRDS(copula_result, file = 'copula_result_population.rds')
 saveRDS(sim_count_1000, file = 'sim_count_1000_population.rds')
 
 #sim_count_1000<-readRDS("sim_count_1000.rds")
-#构造seruat格式
+#
 library(SeuratObject)
 library(Seurat)
 sim_count_1000<-readRDS("sim_count_1000.rds")
@@ -47,11 +47,9 @@ sim_data<-FindVariableFeatures(object=sim_data)
 Idents(sim_data)<-sim_data$celltype
 #sim_data<-RunTsne(object=sim_data)
 saveRDS(sim_data,file="sim_data.rds")
-
-
 ```
 
-### 利用单细胞数据构造模拟数据
+### Construct the simulated data
 
 ```R
 library(scDesign2)
@@ -101,7 +99,6 @@ sim_count_1000 <- simulate_count_scDesign2(copula_result, n_cell_new=1000, sim_m
 saveRDS(copula_result, file = 'copula_result2.rds')
 saveRDS(sim_count_1000, file = 'sim_count2_1000.rds')
 rownames(sim_count_1000)<-rownames(bulk_count)
-#构造seruat格式
 
 
 #sim_count_1000<-readRDS("sim_count_1000.rds")
@@ -129,7 +126,7 @@ dev.off()
 
 ```
 
-### 计算scPagwas
+### scPagwas
 
 ```
  library(scPagwas)
@@ -203,27 +200,11 @@ save(Pagwas,file="Pagwas_Lymphocytecount_nk_v1.9.1.RData")
                         output.dirs="modeldata_Lymphocytecount_outputv1.9.1",
                         size = 0.3,
                         do_plot = F)
-
-
 ```
 
-#!/usr/bin/sh
-#PBS -N roly1
-#PBS -q workq
-#PBS -l nodes=node05
-#PBS -l ncpus=5
-#PBS -j oe
-####mild
+### Rolypoly
 
-source activate R4
-export OPENBLAS_NUM_THREADS=1
-Rscript /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/r1.r
-
-
-
-### rolypoly
-
-```
+```R
 lapply(list.files("/share/pub/dengcy/GWAS_Multiomics/Pkg/rolypoly-master/rolypoly-master/R/"),function(x){
 source(paste0("/share/pub/dengcy/GWAS_Multiomics/Pkg/rolypoly-master/rolypoly-master/R/",x))
 })
@@ -258,19 +239,7 @@ rolypoly_result <- rolypoly_roll(
 save(rolypoly_result,file="/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/rolypoly_modeldata4.RData")
 ```
 
-#!/usr/bin/sh
-#PBS -N roly4
-#PBS -q workq
-#PBS -l nodes=node04
-#PBS -l ncpus=1
-#PBS -j oe
-####mild
-
-source activate R4
-export OPENBLAS_NUM_THREADS=1
-Rscript /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/5.r
-
-整合rolypoly结果：
+Integrate rolypoly：
 
 ```
 rolypoly_score<-unlist(lapply(1:20,function(i){
@@ -279,12 +248,11 @@ return(rolypoly_result$block_heritability_contribution)
 }))
 ```
 
-#### 整合结果到scPagwas：
+#### Put the result for scPagwas: 
 
 ```R
  
 load("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocytecount_nk_v1.9.1.RData") 
-#Pagwas$rolypoly_score<-rolypoly_score
 rolypoly_score<-unlist(lapply(1:20,function(i){
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/rolypoly_modeldata",i,".RData"))
 return(rolypoly_result$block_heritability_contribution)
@@ -294,18 +262,14 @@ rolypoly_p<-unlist(lapply(1:20,function(i){
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/rolypoly_modeldata",i,".RData"))
 return(rolypoly_result$bootstrap_results$bp_value[-1])
 }))
-
-
 Pagwas$rolypoly_score<-rolypoly_score
 Pagwas$rolypoly_p<-rolypoly_p
 save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocytecount_nk_v1.9.1.RData")
-
-
 ```
 
-## 和其他方法得结果比较
+## Compare with other methods
 
-### 1.计算model数据的magma-scDRS
+### 1.magma-scDRS
 
 ```R
 library(SeuratDisk)
@@ -350,7 +314,7 @@ a<-c("magmatop500","NA",magmatop500)
 a<-matrix(a,nrow=1)
 write.table(a,file=paste0("scPagwas.magma.Model.",i,".gmt"),append = T,col.names = F,row.names = F,quote = F,sep = "\t")
 
-################################计算scdrs
+################################scdrs
 import scdrs
 from scipy import stats
 import pandas as pd
@@ -398,13 +362,13 @@ df_res.to_csv("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/monocytecount.5
 
 ```
 
-### 2.整合结果到seruat格式中
+### 2.Integrate result to seruat
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth")
 #load("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocytecount_nk_v1.9.1.RData")
 
-for(i in c(10)){
+for(i in c(1:10)){
     j<-100*i
 scPagwas_topgenes <- names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation, decreasing = T), ])[1:j]
 Pagwas <- Seurat::AddModuleScore(Pagwas, assay = "RNA", list(scPagwas_topgenes), name = paste0("scPagwas.",j,"topgenes.Score"))
@@ -441,9 +405,7 @@ save(Pagwas,file="Pagwas_monocytecount_nk_v1.9.1.RData")
 
 ```
 
-### 3.UMAP得分映射
-
-包括scPagwas和magma得得分映射
+### 3.UMAP plot
 
 ```R
 ###############umap图
@@ -574,11 +536,9 @@ print(p1)
 dev.off()
 ```
 
-### 4.计算其他得分：auccell， vision
+### 4.Other methods: auccell， vision
 
 ```R
-####################
-
 library(testSctpa)
 library(dplyr)
 library(GSVA)
@@ -627,19 +587,16 @@ Pagwas$gsva_scPagwastop1000<-gsva_df$scPagwastop1000
 Pagwas$gsva_scPagwastop500<-gsva_df$scPagwastop500 
 Pagwas$gsva_magmatop500<-gsva_df$magmatop500
 save(Pagwas,file="Pagwas_monocytecount_nk_v1.9.1.RData")
-
-
 ```
 
-### 5.AUC结果画图
+### 5.AUC result
 
 ```R
-####################auc画图
+####################auc
 library(circlize)
 library(dplyr)
 require(pROC)
 require(ggplot2)
-##不同数量的top基因的打分
 
 load("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocytecount_nk_v1.9.1.RData")
 all_fortify_can <- fortify.Seurat.umap(Pagwas)
@@ -658,9 +615,6 @@ names(auc_list1)<-colnames(all_fortify_can)[c(29:32,12,33:37)]
                  color="grey", linetype="dashed")
     #theme(panel.background=element_rect(fill="white",colour="blue"))
   dev.off()
-
-
-#,"scPagwas.1000_scDRS_score","aucell_magmatop1000","aucell_scPagwastop1000","Vision_magmatop1000","Vision_scPagwastop1000","gsva_magmatop1000", "gsva_scPagwastop1000"
 
 all_fortify_can$type[501:503]<-1
 auc_list1<-lapply(all_fortify_can[,c("scPagwas.lm.score","scPagwas.topgenes.Score1","scPagwas.500topgenes.Score1","magma1000_scDRS_score","magma500_scDRS_score","rolypoly_logp")],function(x){
@@ -754,81 +708,7 @@ names(auc_list1)<-c("scPagwas.500.topgenes","magma.500.topgenes")
   dev.off()
 ```
 
-cd8细胞的模拟数据画图：
-
-```
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth")
-load("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocyte_modeldata_cd8_v1.9.1.RData")
-library(scPagwas)
- suppressMessages(library(Seurat))
-library(org.Hs.eg.db)
-library(dplyr)
-
-
-library('ComplexHeatmap')
-library(circlize)
-magma1000_scDRS_re<-read.csv("monocytecount.1000magma.df_modelcd8.csv")
-Pagwas@meta.data$magma1000_scDRS_score<-magma1000_scDRS_re$raw_score
-magma500_scDRS_re<-read.csv("monocytecount.500magma.df_modelcd8.csv")
-Pagwas@meta.data$magma500_scDRS_score<-magma500_scDRS_re$raw_score
-
-meta.data=Pagwas@meta.data;
-filecell="monocytecount";
-#compare_type=c("sclm_allsnpscore");
-celltypes= c("Mono","NK")
-colors_celltypes= c("#ff7f0e","#1f77b4");
-    
-df<-meta.data
-
-df<-df[order(df$magma500_scDRS_score,decreasing=T),]
-pdf(paste0("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Figure_modelcd8_magma500_scDRS_score_",filecell,".rankplot.pdf"),height =7,width =2)
-print(Heatmap(data.matrix(df$celltype),
-        col =colors_celltypes,
-        cluster_columns = F,
-        cluster_rows = F,
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        name = "magma rank"
-))
-
-dev.off()
-
-df<-df[order(df$scPagwas.lm.score,decreasing=T),]
-pdf(paste0("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Figure_modelcd8_scPagwas.lm.score_",filecell,".rankplot.pdf"),height =7,width =2)
-print(Heatmap(data.matrix(df$celltype),
-        col =colors_celltypes,
-        cluster_columns = F,
-        cluster_rows = F,
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        name = "scPagwas rank"
-))
-
-dev.off()
-
-#"#EE8572","#ECB390","#E5F4E7","#E5F4E7"
-
-df<-df[order(df$rolypoly_score,decreasing=T),]
-pdf(paste0("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Figure_rolypoly_score_",filecell,".rankplot.pdf"),height =7,width =2)
-print(Heatmap(data.matrix(df$celltype),
-        col =colors_celltypes,
-        cluster_columns = F,
-        cluster_rows = F,
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        name = "scPagwas rank"
-))
-
-dev.off()
-
-
-```
-
-## 子函数
+## sub-functions
 
 ```
 umap_theme <- function() {

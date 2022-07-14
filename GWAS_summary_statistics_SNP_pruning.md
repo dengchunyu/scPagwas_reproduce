@@ -1,8 +1,8 @@
-# GWAS数据处理原始数据
+# GWAS summary data progressed
 
-处理成可应用与软件的数据（scPagwas,rolypoly,MAGMA,LDSC）
+Deal with the gwas summary files for (scPagwas,rolypoly,MAGMA,LDSC)
 
-统计有42个GWAS数据，包含
+Total 42 gwas files:
 
 - Neuropsychiatric disorders：MDD，ADHD，BIB，ASD；
 
@@ -16,13 +16,9 @@
 
 - Cardiovascular disease：CAD，DBP_European，DBP_EastAsian，PR_EastAsian，SBP，T2D；
 
-等相关表型特征。
-
 ## Read the raw data for gwas summary statics
 
-### 原始数据地址
-
-ls查看文件夹下文件
+### RAW files
 
 Neuropsychiatric disorders：/share/pub/mayl/Sherlock/00_IEU_GWAS/01_neuropsychiatric_disorders
 
@@ -61,9 +57,7 @@ Cardiovascular disease：/share/pub/mayl/Sherlock/00_IEU_GWAS/06_Cardiovascular_
 CAD  DBP_EastAsian  DBP_European  DBP_Hispanic  HBP  Hypertension  PR_EastAsian  SBP  T2D
 ```
 
-### 分别对所有数据进行预处理
-
-进入R对原始数据进行数据选择操作，并输出txt文件。
+### Progressed the data
 
 #### **1.Neuropsychiatric disorders**
 
@@ -84,7 +78,6 @@ ASD="./ASD/ieu-a-1185.vcf.gz"
 MDD="./GWAS_UK_Biobank_MDD/UK_biobank_data_for_depression/ukb-b-12064.vcf.gz",
 BIB="./BIB/ieu-b-41.vcf.gz")
 
-##开始循环
 lapply(names(a),function(x){
 GWAS_raw <-read_table(a[x],skip=109)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
@@ -117,7 +110,7 @@ b<-c(PD="/share/pub/dengcy/GWAS_Multiomics/test/brain/gwas_files/ieu-b-7.vcf.gz"
 
 GWAS_raw <-read_table(b[1],skip=109)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","maf","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -180,12 +173,12 @@ Generalized_EP="Generalized_EP/ieu-b-9.vcf.gz",
 Juvenile_EP="Juvenile_EP/ieu-b-17.vcf.gz",
 Migraine="Migraine/ukb-b-16868.vcf.gz",
 Multiple_sclerosis="Multiple_sclerosis/ieu-b-18.vcf.gz")
-##根据不同数据的格式进行整理
+##
 
 lapply(names(a),function(x){
 GWAS_raw <-read_table(a[x],skip=109)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -225,11 +218,11 @@ Happiness="./Happiness/ukb-b-4062.vcf.gz.vcf.gz")
 a<-c(CognitivePerformance="./CognitivePerformance/ebi-a-GCST006572.vcf.gz",
 SubjectWellBeing="./SubjectWellBeing/ebi-a-GCST003766.vcf.gz")
 
-##开始循环
+##
 lapply(names(a),function(x){
 GWAS_raw <-read_table(a[x],skip=150)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -254,10 +247,6 @@ write.table(gwas_data,file=paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/pr
 })
 rm(list=ls())
 gc()
-############读取另一种类型的数据
-
-
-
 ```
 
 #### 4.Metabolic_disease
@@ -277,11 +266,11 @@ TC="./TC/TC_2013/ieu-a-301.vcf.gz",
 LDL="./LDL/LDL_2013/ieu-a-300.vcf.gz",
 HDL="./HDL/HDL_2013/ieu-a-299.vcf.gz")
 
-##开始循环
+##
 lapply(names(a),function(x){
 GWAS_raw <-read_table(a[x],skip=109)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -310,7 +299,7 @@ gc()
 
 #### 5. Immunological_disease
 
-```
+```R
 library(readr)
 setwd("/share/pub/mayl/Sherlock/00_IEU_GWAS/05_Immunological_disease")
 ############
@@ -322,7 +311,7 @@ UlcerativeColitis="./UlcerativeColitis/ebi-a-GCST004133.vcf.gz")
 #lapply(names(a),function(x){
 GWAS_raw <-read_table(a[3],skip=120)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","maf","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -353,18 +342,18 @@ value_list<-lapply(1:nrow(GWAS_raw),function(i){
 write.table(gwas_data,file=paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",x,"_gwas_data.txt"),row.names=F,quote=F)
 })
 write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/UlcerativeColitis_gwas_data.txt",row.names=F,quote=F)
-###################################另一种类型的数据读取
+###################################
 
 a<-c(
 CoeliacDisease="./CoeliacDisease/dubois_2010_20190752_cel_efo0001060_1_gwas.sumstats.tsv.gz",
-#CrohnDisease="./CrohnDisease/franke_2010_21102463_cro_efo0000384_1_gwas.sumstats.tsv.gz",#数据不合适
+#CrohnDisease="./CrohnDisease/franke_2010_21102463_cro_efo0000384_1_gwas.sumstats.tsv.gz",#
 #ATD="./ATD/cooper_2012_22922229_atd_efo0006812_1_ichip.sumstats.tsv.gz"#数据不合适
 T1D="./T1D_Nature_2021/GCST90014023_buildGRCh38.tsv"
 )
 
 ####CoeliacDisease
 GWAS_raw <-read_table(a[1])
-###这个文件的格式和之前的完全不一样，更容易读取
+###
 #cols(
 #  chrom = col_double(),
 #  pos = col_double(),
@@ -439,11 +428,11 @@ PR_EastAsian="./PR_EastAsian/bbj-a-46.vcf.gz",
 SBP="./SBP/ieu-b-38.vcf.gz"
 )
 
-##开始循环
+##
 lapply(names(a),function(x){
 GWAS_raw <-read_table(a[x],skip=119)
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -466,10 +455,10 @@ value_list<-lapply(1:nrow(GWAS_raw),function(i){
  
 write.table(gwas_data,file=paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",x,"_gwas_data.txt"),row.names=F,quote=F)
 })
-#########另一种类型的数据读取
+#########
 a<-c(CAD="./CAD/ebi-a-GCST005195.vcf.gz"
 
-#T2D="./T2D/ebi-a-GCST006867.vcf.gz"#T2D数据很奇怪，很多问号不能用
+#T2D="./T2D/ebi-a-GCST006867.vcf.gz"#T2D
 )
 
 #lapply(names(a),function(x){
@@ -486,7 +475,7 @@ GWAS_raw <-read_table(a[1],skip=120)
 #  `-0.000319708:0.00949475:0.0132283:rs3115859` = col_character()
 
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","maf","FORMAT","IEU")
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -518,45 +507,25 @@ write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/C
 rm(list=ls())
 gc()
 
-#"MDD" "ADHD" "ASD" "BIB" "EP" "Focal_EP" "Generalized_EP" "Juvenile_EP" "Migraine" "Multiple_sclerosis" "smokingCessation" "OpennessToExperence" "Happiness" "CognitivePerformance" "SubjectWellBeing" "BMI" "WHR" "WC" "Obesity" "CKD" "TC" "LDL" "HDL" "IBD" "PBC" "CoeliacDisease" "CrohnDisease" "T1D" "ATD" "DBP_EastAsian" "DBP_European" "PR_EastAsian" "SBP" "CAD"
 ```
 
-#### 查看所有数据格式
+#### Check the data format
 
 ```
 cd /share/pub/dengcy/GWAS_Multiomics/gwasdata/predata
-
 for i in `ls`
 do
 echo $i
 sed -n 1,4p $i
 done
-
 ```
 
-下面三个数据缺失了beta和se：
+# PLINK  run SNP pruning
 
-T1D_gwas_data.txt换成TIDnature的数据。
-CrohnDisease_gwas_data.txt去掉
-ATD_gwas_data.txt去掉
-
-#很多数据没有maf这个数据，我们虚构了一列maf
-
-# PLINK 软件进行SNP pruning
-
-基于1000 Genome project欧洲人群样本生成plink 格式文件，用于后面的SNP pruning
-
-#地址：/share/pub/mayl/Sherlock/plink
-#修改PATH环境
-#vim ~/.bashrc 
-#//在最后一行添上：
-#export PATH="/share/pub/mayl/Sherlock/plink":$PATH
-#输入“source ~/.bashrc”命令，立即生效
-
-## 第一部分
+## First section
 #### Refence LD based on the 1000Genome_European_Phase3
 ```
-#地址：/share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink
+#/share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink
 /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink
 #Chr1-22
 1000G.EUR.QC.9.bed
@@ -587,16 +556,13 @@ ATD_gwas_data.txt去掉
    549971 1000G.EUR.QC.8.bim
    438106 1000G.EUR.QC.9.bim
   9997231 total
-
-#匹配22号染色体所在的行：
+#
 sed -n '/^22/p' /share/pub/jiangdp/Pagwas/GWAS/04_Metabolic_disease/WHR/WHR.txt
 ```
 
 
 
-## 第二部分
-
-得到所有表型的snp数据
+## Second Section
 
 ```
 #GWAS Summary statistics file
@@ -612,7 +578,7 @@ done
 
 
 
-## 第三部分
+## Third Section
 
 Extract a subset of SNPs: "file-list" option
 To extract only a subset of SNPs, it is possible to specify a list of required SNPs and make a new file, or perform an analysis on this subset, by using the command
@@ -626,10 +592,6 @@ plink --file data --extract mysnps.txt
      snp008
      snp101
 
-#### 实际操作
-
-在服务器上分别计算：
-
 ```
 #!/usr/bin/env bash
 #PBS -N plink1
@@ -638,7 +600,7 @@ plink --file data --extract mysnps.txt
 #PBS -l ncpus=1
 #PBS -j oe
 
-for j in MDD ADHD ASD PD
+for j in MDD ADHD ASD PD BID EP Focal_EP Generalized_EP Juvenile_EP Migraine Multiple_sclerosis smokingCessation OpennessToExperence Happiness CognitivePerformance SubjectWellBeing BMI WHR WC Obesity TC LDL HDL IBD PBC CoeliacDisease T1D DBP_EastAsian DBP_European PR_EastAsian SBP CAD T2D UlcerativeColitis AD
 do
 echo $j
 for i in $(seq 1 22)  
@@ -647,124 +609,9 @@ echo $i
 plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
 done 
 done
-
-#!/usr/bin/env bash
-#PBS -N plink2
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in BID EP Focal_EP Generalized_EP
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink3
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for j in Juvenile_EP Migraine Multiple_sclerosis smokingCessation
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink4
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in OpennessToExperence Happiness CognitivePerformance SubjectWellBeing
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink5
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in BMI WHR WC Obesity
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink6
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in TC LDL HDL IBD
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink7
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in PBC CoeliacDisease T1D DBP_EastAsian
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink8
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in DBP_European PR_EastAsian SBP CAD
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink9
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in T2D UlcerativeColitis AD
-do
-  for i in $(seq 1 22)  
-  do   
-  plink --bfile   /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-  done 
-done
-
 ```
 
-## 第四部分
+## Fourth Section
 
 ### 1 The VIF pruning routine is performed:
 
@@ -803,10 +650,6 @@ plink --file data --indep-pairwise 50 5 0.5
 plink --file data --extract plink.prune.in --make-bed --out pruneddata
 ```
 
-
-
-#### 实际操作
-
 ```
 #!/usr/bin/env bash
 #PBS -N plink1
@@ -815,7 +658,7 @@ plink --file data --extract plink.prune.in --make-bed --out pruneddata
 #PBS -l ncpus=1
 #PBS -j oe
 
-for j in MDD ADHD ASD
+for j in MDD ADHD ASD PD BID EP Focal_EP Generalized_EP Juvenile_EP Migraine Multiple_sclerosis smokingCessation OpennessToExperence Happiness CognitivePerformance SubjectWellBeing BMI WHR WC Obesity TC LDL HDL IBD PBC CoeliacDisease T1D DBP_EastAsian DBP_European PR_EastAsian SBP CAD T2D UlcerativeColitis AD
 do
 echo $j
 for i in $(seq 1 22)  
@@ -824,282 +667,30 @@ echo $i
 plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
 done 
 done
-
-#!/usr/bin/env bash
-#PBS -N plink2
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in BID EP Focal_EP
-do
-for i in $(seq 1 22)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink3
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for j in Juvenile_EP Migraine Multiple_sclerosis
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink4
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in OpennessToExperence Happiness CognitivePerformance
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink5
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in BMI WHR WC
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink6
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in TC LDL HDL
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink7
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in PBC CoeliacDisease T1D
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink8
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in DBP_European PR_EastAsian SBP 
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink9
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in T2D UlcerativeColitis AD
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink10
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in CAD DBP_EastAsian IBD
-do
-for i in $(seq 1 22)  
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink11
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in Obesity SubjectWellBeing smokingCessation
-do
-for i in $(seq 1 22)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink12
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-for j in Generalized_EP PD
-do
-for i in $(seq 1 22)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink1
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 1 3)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink2
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 4 6)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-#!/usr/bin/env bash
-#PBS -N plink3
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 7 9)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-
-
-#!/usr/bin/env bash
-#PBS -N plink4
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 10 12)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-
-
-
-
-#!/usr/bin/env bash
-#PBS -N plink5
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 13 15)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink6
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 16 18)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done
-
-
-#!/usr/bin/env bash
-#PBS -N plink7
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-
-for i in $(seq 19 22)
-do   
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/1000G.EUR.QC.PD_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/PD_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-
 ```
 
-## 第五部分
+## Fifth Section
 
-合并不同表型的SNP：
+bind the SNP：
 
 ```
-###合并SNPs
+###
 cd /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/
 for j in MDD ADHD ASD PD BID EP Focal_EP Generalized_EP Juvenile_EP Migraine Multiple_sclerosis smokingCessation OpennessToExperence Happiness CognitivePerformance SubjectWellBeing BMI WHR WC Obesity TC LDL HDL IBD PBC CoeliacDisease T1D DBP_EastAsian DBP_European PR_EastAsian SBP CAD T2D UlcerativeColitis AD
 do
 echo $j
 cat [${j}]*.prune.in > ${j}_merge_plink_EUR_filtered_LD0.8.prune.in
 done 
-#####删除多余文件
+#####
 rm -f {*.prune.in}
-##文件剩余的行数
+##
 for j in MDD ADHD ASD PD BID EP Focal_EP Generalized_EP Juvenile_EP Migraine Multiple_sclerosis smokingCessation OpennessToExperence Happiness CognitivePerformance SubjectWellBeing BMI WHR WC Obesity TC LDL HDL IBD PBC CoeliacDisease T1D DBP_EastAsian DBP_European PR_EastAsian SBP CAD T2D UlcerativeColitis AD
 do
 wc -l ${j}_merge_plink_EUR_filtered_LD0.8.prune.out
 wc -l /share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/${j}_gwas_data.txt
 done 
 
-###########################文件剩余的行数（snp的数量）
+###########################
 23100115 MDD_merge_plink_EUR_filtered_LD0.8.prune.out
 7338291 /share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/MDD_gwas_data.txt
 32176215 ADHD_merge_plink_EUR_filtered_LD0.8.prune.out
@@ -1173,7 +764,7 @@ done
 
 ```
 
-将过滤后的snp与之前得到的gwas数据进行合并：打开R 
+bind the gwas
 
 ```
 library(readr)
@@ -1190,323 +781,9 @@ for (i in c("MDD","ADHD","ASD","PD","BID","EP","Focal_EP","Generalized_EP","Juve
         print(i)
 gc()
 }
-
-#for (i in c("DBP_European","PR_EastAsian","SBP","CAD","AD","T2D","UlcerativeColitis","DBP_EastAsian")) {
-
-i<-"DBP_European"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-#}
-###########################################################
-
-#!/usr/bin/env bash
-#PBS -N 8
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/8.r
-
-library(readr)
-library(dplyr)
-i<-"DBP_European"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-#!/usr/bin/env bash
-#PBS -N 7
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/7.r
-
-library(readr)
-library(dplyr)
-i<-"PR_EastAsian"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-#!/usr/bin/env bash
-#PBS -N 6
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/6.r
-
-library(readr)
-library(dplyr)
-i<-"SBP"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-
-#!/usr/bin/env bash
-#PBS -N 5
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/5.r
-
-library(readr)
-library(dplyr)
-i<-"CAD"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-
-#!/usr/bin/env bash
-#PBS -N 4
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/4.r
-
-library(readr)
-library(dplyr)
-i<-"AD"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-#!/usr/bin/env bash
-#PBS -N 3
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/3.r
-
-library(readr)
-library(dplyr)
-i<-"T2D"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-
-#!/usr/bin/env bash
-#PBS -N 2
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/2.r
-
-library(readr)
-library(dplyr)
-i<-"UlcerativeColitis"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
-
-#!/usr/bin/env bash
-#PBS -N 1
-#PBS -q workq
-#PBS -l nodes=node03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/1.r
-
-
-library(readr)
-library(dplyr)
-i<-"DBP_EastAsian"
-    gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/",i,"_gwas_data.txt"))
-    SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
-    SNP_prune<-SNP_prune[!duplicated(unlist(SNP_prune)),]
-    colnames(SNP_prune)<-"rsid"
-    #### Left Join using inner_join function 
-   gwas= gwas %>% inner_join(SNP_prune,by="rsid")
-        write.table(gwas,file= paste0("/share/pub/dengcy/GWAS_Multiomics/gwasdata/prunedata/",i,"_prune_gwas_data.txt"),,row.names=F,quote=F)
-        print(i)
-gc()
-
 ```
 
 ## blood traits gwas 数据的处理
-
-### RBCcount
-
-```R
-library(readr)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits")
-############
-RBCcount<-"ieu-a-275.vcf.gz"
-
-GWAS_raw <-read_table(RBCcount,skip=109)
-colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
-  index<-unlist(index)
-  value <- strsplit(GWAS_raw$IEU[i], split = ":",fixed=T)
-  value<-unlist(value)
-  names(value)<-index
-    
-  value<-value[c("ES","SE","LP","SS")]
-  return(value)
-  })
-
- value_df<- matrix(as.numeric(unlist(value_list)),byrow=T,ncol=4)
- value_df<-as.data.frame(value_df)
- colnames(value_df)<-c("ES","SE","LP","SS")
- gwas_data<-GWAS_raw[,c(1:5)]
- gwas_data<- cbind(gwas_data,value_df)
- gwas_data$LP <-  10^(-gwas_data$LP)
-#CHROM    POS         ID REF ALT      ES     SE       LP    SS
- colnames(gwas_data)<-c("chrom","pos","rsid","REF","ALT","beta","se","p","N")
-# if(is.na(gwas_data$maf[1])) 
-     gwas_data$maf<-0.1
-write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/RBCcount_gwas_data.txt",row.names=F,quote=F)
-gwas_data<-read.table("RBCcount_gwas_data.txt",header=T)
-gwas_data$p[which(gwas_data$p>1)]<-1
-
-######################ukb-d-30010_irnt
-library(readr)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits")
-############
-RBCcount<-"ukb-d-30010_irnt.vcf.gz"
-GWAS_raw <-read_table(RBCcount,skip=109)
-colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ieu-a格式数据
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  index <- strsplit(GWAS_raw$INFO[i], split = "=",fixed=T)[[1]][[2]]
-  return(index)
-  })
-GWAS_raw$INFO<-unlist(value_list)
-
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
-  index<-unlist(index)
-  value <- strsplit(GWAS_raw$IEU[i], split = ":",fixed=T)
-  value<-unlist(value)
-  names(value)<-index
-    
-  value<-value[c("ES","SE","LP","SS")]
-  return(value)
-  })
-
- value_df<- matrix(as.numeric(unlist(value_list)),byrow=T,ncol=4)
- value_df<-as.data.frame(value_df)
- colnames(value_df)<-c("ES","SE","LP","SS")
- gwas_data<-GWAS_raw[,c(1:5,8)]
- gwas_data<- cbind(gwas_data,value_df)
- gwas_data$LP <-  10^(-gwas_data$LP)
-#CHROM    POS         ID REF ALT      ES     SE       LP    SS
- colnames(gwas_data)<-c("chrom","pos","rsid","REF","ALT","maf","beta","se","p","N")
-# if(is.na(gwas_data$maf[1])) 
-     #gwas_data$maf<-0.1
-write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/RBCcount2_gwas_data.txt",row.names=F,quote=F)
-gwas_data<-read.table("RBCcount_gwas_data.txt",header=T)
-gwas_data$p[which(gwas_data$p>1)]<-1
-
-```
-
-###  Plateletcount
-
-```R
-
-library(readr)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits")
-############
-Plateletcount<-"ieu-a-1008.vcf.gz"
-#`#CHROM`    POS ID     REF   ALT   QUAL  FILTER INFO   FORMAT  `ieu-a-1008`  
-GWAS_raw <-read_table(Plateletcount,skip=109)
-colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ES:SE:LP:AF:SS:ID
-#ieu-a格式数据
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
-  index<-unlist(index)
-  value <- strsplit(GWAS_raw$IEU[i], split = ":",fixed=T)
-  value<-unlist(value)
-  names(value)<-index
-    
-  value<-value[c("ES","SE","LP","AF","SS")]
-  return(value)
-  })
-
- value_df<- matrix(as.numeric(unlist(value_list)),byrow=T,ncol=5)
- value_df<-as.data.frame(value_df)
- colnames(value_df)<-c("ES","SE","LP","AF","SS")
- gwas_data<-GWAS_raw[,c(1:5)]
- gwas_data<- cbind(gwas_data,value_df)
- gwas_data$LP <-  10^(-gwas_data$LP)
- gwas_data$LP[which(gwas_data$LP>1)]<-1
- colnames(gwas_data)
-#[1] "CHROM" "POS"   "ID"    "REF"   "ALT"   "ES"    "SE"    "LP"    "AF"   
-#[10] "SS"
- colnames(gwas_data)<-c("chrom","pos","rsid","REF","ALT","beta","se","p","maf","N")
-# if(is.na(gwas_data$maf[1])) 
-    # gwas_data$maf<-0.1
-write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/Plateletcount_gwas_data.txt",row.names=F,quote=F)
-```
 
 ### basophil cell count
 
@@ -1590,48 +867,6 @@ value_list<-lapply(1:nrow(GWAS_raw),function(i){
 # if(is.na(gwas_data$maf[1])) 
     # gwas_data$maf<-0.1
 write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/eosinophilcount_gwas_data.txt",row.names=F,quote=F)
-```
-
-### lymphocyte cell count
-
-Dataset: ieu-b-32
-
-```R
-library(readr)
-setwd("/home/guofj/bloodtraits")
-############
-lymphocytecount<-"ieu-b-32.vcf.gz"
-#`#CHROM`    POS ID     REF   ALT   QUAL  FILTER INFO   FORMAT  `ieu-a-1008`  
-GWAS_raw <-read_table2(lymphocytecount,comment = "#")
-
-colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ES:SE:LP:AF:ID
-#ieu-a格式数据
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
-  index<-unlist(index)
-  value <- strsplit(GWAS_raw$IEU[i], split = ":",fixed=T)
-  value<-unlist(value)
-  names(value)<-index
-    
-  value<-value[c("ES","SE","LP","AF","SS")]
-  return(value)
-  })
-
- value_df<- matrix(as.numeric(unlist(value_list)),byrow=T,ncol=5)
- value_df<-as.data.frame(value_df)
- colnames(value_df)<-c("ES","SE","LP","AF","SS")
- gwas_data<-GWAS_raw[,c(1:5)]
- gwas_data<- cbind(gwas_data,value_df)
- gwas_data$LP <-  10^(-gwas_data$LP)
- gwas_data$LP[which(gwas_data$LP>1)]<-1
- colnames(gwas_data)
-#[1] "CHROM" "POS"   "ID"    "REF"   "ALT"   "ES"    "SE"    "LP"    "AF"   
-#[10] "SS"
- colnames(gwas_data)<-c("chrom","pos","rsid","REF","ALT","beta","se","p","maf","N")
-# if(is.na(gwas_data$maf[1])) 
-    # gwas_data$maf<-0.1
-write.table(gwas_data,file="lymphocytecount_gwas_data.txt",row.names=F,quote=F)
 ```
 
 ### monocyte cell count
@@ -1732,7 +967,7 @@ GWAS_raw <-read_table2(WhiteBloodCellcount,comment = "#")
 
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
 #ES:SE:LP:AF:SS:ID
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -1974,7 +1209,7 @@ GWAS_raw <-read_table(MeanCorpusVolume,comment = "#")
 
 colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
 #ES:SE:LP:AF:SS:ID
-#ieu-a格式数据
+#ieu-a
 value_list<-lapply(1:nrow(GWAS_raw),function(i){
   index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
   index<-unlist(index)
@@ -2003,50 +1238,12 @@ value_list<-lapply(1:nrow(GWAS_raw),function(i){
 write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/Lymphocytepercentage2_gwas_data.txt",row.names=F,quote=F)
 ```
 
-**Lymphocyte count**
-**Dataset: ukb-d-30120_irnt**
-
-```
-library(readr)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits")
-############
-Lymphocyte_count<-"ukb-d-30120_irnt.vcf.gz"
-#`#CHROM`    POS ID     REF   ALT   QUAL  FILTER INFO   FORMAT  `ieu-a-1008`  
-GWAS_raw <-read_table(Lymphocyte_count,comment = "#")
-
-colnames(GWAS_raw )<-c("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT","IEU")
-#ES:SE:LP:AF:SS:ID
-#ieu-a格式数据
-value_list<-lapply(1:nrow(GWAS_raw),function(i){
-  #index <- strsplit(GWAS_raw$FORMAT[i], split = ":",fixed=T)
-  #index<-unlist(index)
-  value <- strsplit(GWAS_raw$IEU[i], split = ":",fixed=T)
-  value<-unlist(value)[1:5]
-  names(value)<-c("ES","SE","LP","AF","SS")
-    #ES:SE:LP:AF:SS:ID
-  #value<-value[c("ES","SE","LP","AF","SS")]
-  return(value)
-  })
-
- value_df<- matrix(as.numeric(unlist(value_list)),byrow=T,ncol=5)
- value_df<-as.data.frame(value_df)
- colnames(value_df)<-c("ES","SE","LP","AF","SS")
- gwas_data<-GWAS_raw[,c(1:5)]
- gwas_data<- cbind(gwas_data,value_df)
- gwas_data$p <-  10^(-gwas_data$LP)
- colnames(gwas_data)
-#[1] "CHROM" "POS"   "ID"    "REF"   "ALT"   "ES"    "SE"    "LP"    "AF"   
-#[10] "SS"
-gwas_data<-gwas_data[,c("CHROM", "POS","ID","REF","ALT","ES","SE","p","AF","SS")]
- colnames(gwas_data)<-c("chrom","pos","rsid","REF","ALT","beta","se","p","maf","N")
-
-write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/Lymphocytecount2_gwas_data.txt",row.names=F,quote=F)
-```
+### **Lymphocyte count**
 
 **Lymphocyte count**3
 **Dataset: bbj-a-36**
 
-```
+```R
 library(readr)
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits")
 ############
@@ -2081,9 +1278,7 @@ gwas_data<-gwas_data[,c("CHROM", "POS","ID","REF","ALT","ES","SE","p","AF")]
 write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/Lymphocytecount3_gwas_data.txt",row.names=F,quote=F)
 ```
 
-
-
-## blood traits snp数据的pruning
+## blood traits snp pruning
 
 ```shell
 cd /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits
@@ -2091,16 +1286,12 @@ mkdir tempfile
 #######################1.
 #neutrophilcount WhiteBloodCellcount MeanCorpusVolume 
 #Plateletcount basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount MeanCorpusVolume 
-###最新数据
-for i in RBCcount2 Lymphocytepercentage2 
+###
+for i in  
 do
 awk  '{print $3 }' ${i}_gwas_data.txt  > /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${i}_SNP_list.txt
 done
 
-for i in LymphocytePercent  MeanCorpuscularHemoglobin Hemoglobinconcen
-do
-awk  '{print $3 }' ${i}_gwas_data.txt  > /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${i}_SNP_list.txt
-done
 
 ######################2.
 #for j in RBCcount Plateletcount basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount MeanCorpusVolume 
@@ -2114,91 +1305,10 @@ echo $i
 plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered
 done 
 done
-###
-#LymphocytePercent  MeanCorpuscularHemoglobin
-for j in Hemoglobinconcen
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink/1000G.EUR.QC.$i --extract /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_SNP_list.txt --noweb --make-bed --out /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered
-done 
-done
+
 ######################3.
 #for j in eosinophilcount lymphocytecount monocytecount 
-for j in RBCcount2 Lymphocytepercentage2
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in LymphocytePercent  MeanCorpuscularHemoglobin Hemoglobinconcen
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in RBCcount Plateletcount basophilcount 
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in neutrophilcount WhiteBloodCellcount MeanCorpusVolume
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-##########上面的没跑完，需要再跑三个：
-for j in MeanCorpusVolume
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in monocytecount
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in Hemoglobinconcen
-do
-echo $j
-for i in $(seq 1 22)  
-do 
-echo $i
-plink --bfile /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/1000G.EUR.QC.${j}_${i}_filtered --indep-pairwise 50 5 0.8 --out  /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/${j}_${i}_plink_prune_EUR_filtered_LD0.8
-done 
-done
-
-for j in MeanCorpusVolume
+for j in Lymphocytepercentage2
 do
 echo $j
 for i in $(seq 1 22)  
@@ -2216,9 +1326,9 @@ do
 echo $j
 cat [${j}]*.prune.in > ${j}_merge_plink_EUR_filtered_LD0.8.prune.in
 done 
-#####删除多余文件
+#####remove 
 rm -f {*.prune.out}
-##文件剩余的行数
+##
 for j in RBCcount Plateletcount basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
 do
 echo $j
@@ -2227,15 +1337,12 @@ wc -l /share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/${j}_gwas_data.txt
 done 
 ```
 
-## blood traits snp数据的整合
+## Integrate blood traits snp files
 
 ```R
 library(readr)
 library(dplyr)
-#for j in 
-#"RBCcount","Plateletcount","basophilcount","eosinophilcount" ,"lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume"
-
-for (i in c("RBCcount2","Lymphocytepercentage2")) {
+for (i in c("basophilcount","eosinophilcount" ,"lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")) {
     print(i)
     gwas<-read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_gwas_data.txt"))
     SNP_prune<- read_table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/tempfile/",i,"_merge_plink_EUR_filtered_LD0.8.prune.in"))
@@ -2248,18 +1355,5 @@ for (i in c("RBCcount2","Lymphocytepercentage2")) {
         print(i)
 #gc()
 }
-
-###########################################################
-
-#!/usr/bin/env bash
-#PBS -N 8
-#PBS -q fat
-#PBS -l nodes=fat03
-#PBS -l ncpus=1
-#PBS -j oe
-source activate R403
-Rscript /share/pub/dengcy/GWAS_Multiomics/gwasdata/8.r
-
-
 ```
 
