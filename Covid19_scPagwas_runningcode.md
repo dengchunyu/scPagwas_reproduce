@@ -12,30 +12,32 @@
 
 ### moderate
 
-An object of class Seurat 
-37985 features across 204508 samples within 2 assays 
-Active assay: SCT (17803 features, 0 variable features)
- 1 other assay present: RNA
+> An object of class Seurat 
+> 37985 features across 204508 samples within 2 assays 
+> Active assay: SCT (17803 features, 0 variable features)
+>  1 other assay present: RNA
 
 
 
 ### mild
 
-An object of class Seurat 
-37985 features across 122686 samples within 2 assays 
-Active assay: SCT (17803 features, 0 variable features)
- 1 other assay present: RNA
+> An object of class Seurat 
+> 37985 features across 122686 samples within 2 assays 
+> Active assay: SCT (17803 features, 0 variable features)
+>  1 other assay present: RNA
 
 
 
 ### Normal
 
-An object of class Seurat 
-37985 features across 37775 samples within 2 assays 
-Active assay: SCT (17803 features, 0 variable features)
- 1 other assay present: RNA
+> An object of class Seurat 
+> 37985 features across 37775 samples within 2 assays 
+> Active assay: SCT (17803 features, 0 variable features)
+>  1 other assay present: RNA
 
 ## scPagwas v1.9
+
+save rds files
 
 ```R
 load("/share/pub/dengcy/GWAS_Multiomics/test/covid19/Single_data_severe.RData")
@@ -49,7 +51,9 @@ load("/share/pub/dengcy/GWAS_Multiomics/test/covid19/Single_data_normal.RData")
 saveRDS(Single_data_normal,file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/normal_all.rds")
 ```
 
-### severe
+### 1. severe
+
+#### Run celltypes scPagwas result
 
 ```R
 library(scPagwas)
@@ -80,7 +84,7 @@ Pagwas<-scPagwas_main(Pagwas = NULL,
 Pagwas$Pathway_ld_gwas_data<-NULL
 save(Pagwas,file="scpagwas_severe.v1.9.1.RData")
 
- load("scpagwas_severe.v1.9.1.RData")
+load("scpagwas_severe.v1.9.1.RData")
 Pagwas<-scPagwas_main(Pagwas = Pagwas,
                      gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
                        assay="RNA",
@@ -110,10 +114,8 @@ library(scPagwas)
  suppressMessages(library(Seurat))
  suppressMessages(library("dplyr"))
 celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
-i<-celltype[1]
 
-#i<-"Naive CD8+T cell"
-# setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/test5.6")
+for(i in celltype){
 Pagwas<-scPagwas_main(Pagwas = NULL,
                        gwas_data ="/share/pub/dengcy/GWAS_Multiomics/test/covid19/COVID19_GWAS.txt",
                        assay="RNA",
@@ -124,16 +126,12 @@ Pagwas<-scPagwas_main(Pagwas = NULL,
                       ncores=5,
                      Pathway_list=Genes_by_pathway_kegg,
                      chrom_ld = chrom_ld)
-save(Pagwas,file=paste0("scpagwas_severe_",i".RData"))#i<-"Naive CD8+T cell"
-# setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/test5.6")
-
-
+save(Pagwas,file=paste0("scpagwas_severe_",i,".RData"))
+}
 ############cd14monocyte
-celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
 i<-celltype[6]
-j<-1
-
-Pagwas<-scPagwas_main(Pagwas = NULL,
+for(j in 1:5){
+ Pagwas<-scPagwas_main(Pagwas = NULL,
                        gwas_data ="/share/pub/dengcy/GWAS_Multiomics/test/covid19/COVID19_GWAS.txt",
                      add_eqtls="OnlyTSS",
                        assay="RNA",
@@ -145,7 +143,8 @@ Pagwas<-scPagwas_main(Pagwas = NULL,
                       ncores=10,
                      Pathway_list=Genes_by_pathway_kegg,
                      chrom_ld = chrom_ld)
-save(Pagwas,file=paste0("scpagwas_severe_",i,j,".RData"))
+save(Pagwas,file=paste0("scpagwas_severe_",i,j,".RData"))   
+}
 ```
 
 #### Integrate the result：
@@ -153,14 +152,24 @@ save(Pagwas,file=paste0("scpagwas_severe_",i,j,".RData"))
 ```R
 #severe
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-i<-celltype[1]
-load("scpagwas_severe_CD14+monocyte_1.RData")
-Pagwas1<-Pagwas
-load("scpagwas_severe_CD14+monocyte_2.RData")
-Pagwas_integrate <- merge_pagwas(Pagwas_list = list(Pagwas1,Pagwas),n_topgenes = 1000)   
-...
+i<-celltype[6]
+Pagwas_l<-lapply(1:5,function(j){
+load(paste0("scpagwas_severe_",i,j,".RData"))
+ return(Pagwas)   
+})
 
+Pagwas_CD14_mono <- merge_pagwas(Pagwas_list = Pagwas_l,n_topgenes = 1000)   
+Pagwas_l<-lapply(celltype[-6],function(i){
+load(paste0("scpagwas_severe_",i,".RData"))
+ return(Pagwas)   
+})
+Pagwas <- merge_pagwas(Pagwas_list = Pagwas_l,n_topgenes = 1000)   
+Pagwas <- merge_pagwas(Pagwas_list = c(Pagwas,Pagwas_CD14_mono),n_topgenes = 1000)  
+```
 
+#### Visualization
+
+```R
 load("/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_severe.v1.91.RData")
 Pagwas1 <- FindVariableFeatures(Pagwas1,nfeatures = 5000,assay ="RNA")
 #Pagwas1 <- NormalizeData(Pagwas1, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -182,15 +191,15 @@ Pagwas1 <- RunUMAP(object = Pagwas1, assay = "RNA", reduction = "pca",dims = 1:5
 save(Pagwas1,file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_severe.v1.91.RData")
 ```
 
-### mild
+### 2. mild
+
+#### Run celltypes scPagwas result
 
 ```R
 library(scPagwas)
  suppressMessages(library(Seurat))
  suppressMessages(library("dplyr"))
-data(Genes_by_pathway_kegg)
- data(block_annotation)
- data(chrom_ld)
+
  setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/test5.6")
 mild_all<-readRDS("/share2/pub/jiangdp/jiangdp/COVID/data/mild_all.rds")
 table(Idents(mild_all))
@@ -207,44 +216,16 @@ lapply(as.vector(unique(Idents(mild_all))[2:12]),function(x){
   saveRDS(a,file=paste0("/share/pub/dengcy/GWAS_Multiomics/test/covid19/mild_",x,".rds"))
 })
 
-setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-data(Genes_by_pathway_kegg)
- data(block_annotation)
- data(chrom_ld)
- 
-Pagwas<-scPagwas_main(Pagwas = NULL,
-                     gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
-                       assay="RNA",
-                     block_annotation = block_annotation,
-                     Single_data = "/share2/pub/jiangdp/jiangdp/COVID/data/mild_all.rds",
-                     singlecell=F,
-                      output.prefix="test",
-                     celltype=T,
-                     Pathway_list=Genes_by_pathway_kegg,
-                     chrom_ld = chrom_ld)
-Pagwas$Pathway_ld_gwas_data<-NULL
-save(Pagwas,file="scpagwas_mild.v1.71.RData")
-
-
 ###########
 library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-data(Genes_by_pathway_kegg)
- data(block_annotation)
- data(chrom_ld)
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
 Pagwas<-scPagwas_main(Pagwas = NULL,
                      gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
-                     add_eqtls="OnlyTSS",
                        assay="RNA",
                      block_annotation = block_annotation,
                      Single_data = "/share2/pub/jiangdp/jiangdp/COVID/data/mild_all.rds",
                      singlecell=F,
-                      output.prefix="mild",
+                     output.prefix="mild",
                      celltype=T,
                      Pathway_list=Genes_by_pathway_kegg,
                      chrom_ld = chrom_ld)
@@ -252,146 +233,57 @@ Pagwas$Pathway_ld_gwas_data<-NULL
 save(Pagwas,file="scpagwas_mild.v1.73.RData")
 ```
 
-#### based on v1.7.3 to v1.9.1
-
-```R
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
- setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell ","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
-i<-celltype[1]
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_mild_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/mild_",i,".rds"))
-Pagwas1<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-
-for(i in celltype[2:12]){  
-    print(i)
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_mild_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/mild_",i,".rds"))
-Pagwas<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-Pagwas1<-merge(Pagwas1,y= Pagwas, project = "merged", merge.data = TRUE)   
-}
-save(Pagwas1,file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_mild.v1.91.RData")
-###############subfunction
-rerun_Pagwas<-function(Single_data=Single_data,Pagwas,assay="RNA",n_topgenes=1000){
-     class(Pagwas)<-"list"  
-    scPagwas_topgenes <- names(Pagwas$gene_heritability_correlation[order(Pagwas$gene_heritability_correlation, decreasing = T), ])[1:n_topgenes]
-    Single_data <- Seurat::AddModuleScore(Single_data, assay = assay, list(scPagwas_topgenes), name = c("scPagwas.topgenes.Score"))
-      Pagwas[c(
-      "VariableFeatures", "merge_scexpr","snp_gene_df",
-      "rawPathway_list","data_mat"
-    )] <- NULL
-
-    message("* Get rankPvalue for each single cell")
-    CellScalepValue <- rankPvalue(datS = t(data.matrix(GetAssayData(Single_data, assay = assay)[scPagwas_topgenes, ])), pValueMethod = "scale")
-     Pagwas[c("snp_gene_df",
-               "Pathway_sclm_results","CellScalepValue",
-               "scPagwas.topgenes.Score"
-               )] <- NULL
-      #Pagwas[c()] <- NULL
-      scPagwas_pathway <- SeuratObject::CreateAssayObject(data = t(data.matrix(Pagwas$Pathway_single_results)))
-      scPagwas_pca <- SeuratObject::CreateAssayObject(data = Pagwas$pca_scCell_mat)
-
-      Single_data[["scPagwasPaHeritability"]] <- scPagwas_pathway
-      Single_data[["scPagwasPaPca"]] <- scPagwas_pca
-
-      Single_data$scPagwas.lm.score <- Pagwas$scPagwas_score[rownames(Pagwas$Celltype_anno)]
-      Single_data$CellScalepValue <- CellScalepValue[rownames(Pagwas$Celltype_anno), "pValueHighScale"]
-      Single_data$CellScaleqValue <- CellScalepValue[rownames(Pagwas$Celltype_anno), "qValueHighScale"]
-      Pagwas[ c("scPagwas.score","Celltype_anno",
-                "Pathway_single_results","pca_scCell_mat")] <- NULL
-   
-      Single_data@misc<-Pagwas
-    return(Single_data)
-}
-
-```
-
-Integrate the result：
+#### Run sub celltypes
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
 library(scPagwas)
  suppressMessages(library(Seurat))
  suppressMessages(library("dplyr"))
-load("scpagwas_severe.v1.71.RData")
-names(Pagwas)
-pahtways <- rownames(Pagwas$pca_scCell_mat)
-
-celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell","CD14+monocyte1","CD14+monocyte2","CD14+monocyte3","CD14+monocyte4","CD14+monocyte5","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
-
-Pathway_single_results<-list()
-Pathway_sclm_results<-list()
-cellids<-list()
+celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
 
 for(i in celltype){
-
-load(paste0("scpagwas_mild_",i,".RData"))
-x<-as.data.frame(data.matrix(Pagwas$Pathway_single_results))
-a<- setdiff(pahtways,colnames(x))
-x[,a]<-0  
-Pathway_single_results[[i]]<-x[,pahtways]
-cellids[[i]]<-colnames(Pagwas$pca_scCell_mat)
-    
-y<-as.data.frame(data.matrix(Pagwas$Pathway_sclm_results))
-a<- setdiff(pahtways,colnames(y))
-y[,a]<-0  
-Pathway_sclm_results[[i]]<-y[,pahtways] 
+Pagwas<-scPagwas_main(Pagwas = NULL,
+                       gwas_data ="/share/pub/dengcy/GWAS_Multiomics/test/covid19/COVID19_GWAS.txt",
+                       assay="RNA",
+                     block_annotation = block_annotation,
+                     Single_data = paste0("/share/pub/dengcy/GWAS_Multiomics/test/covid19/mild_",i,".rds"),
+                      output.prefix="COVID19severe_kegg",
+                     output.dirs=i,
+                      ncores=5,
+                     Pathway_list=Genes_by_pathway_kegg,
+                     chrom_ld = chrom_ld)
+save(Pagwas,file=paste0("scpagwas_mild_",i,".RData"))
 }
-
-cellids<-unlist(cellids)
-
-Pathway_single_results<-data.matrix(bigreadr::rbind_df(Pathway_single_results))
-
-rownames(Pathway_single_results)<-cellids
-colnames(Pathway_single_results)<-pahtways
-
-Pathway_sclm_results<-data.matrix(bigreadr::rbind_df(Pathway_sclm_results))
-#,"dgCMatrix")
-rownames(Pathway_sclm_results)<-cellids
-colnames(Pathway_sclm_results)<-pahtways
-save(Pathway_sclm_results,Pathway_single_results,file="pathway_mat_severe.RData")
-
-
-load("scpagwas_severe.v1.71.RData")
-
-Pagwas$Pathway_sclm_results<-Pathway_sclm_results[colnames(Pagwas$data_mat),]
-Pagwas$Pathway_single_results<-Pathway_single_results[colnames(Pagwas$data_mat),]
-dim(Pagwas$Pathway_sclm_results)
-dim(Pagwas$Pathway_single_results)
-save(Pagwas,file="scpagwas_severe.v1.71.RData")
-
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-  Pagwas<-scPagwas_perform_score(Pagwas=Pagwas,
-                                 remove_outlier=TRUE)
-  Pagwas <- scGet_gene_heritability_correlation(Pagwas=Pagwas)
-save(Pagwas,file="scpagwas_severe.v1.71.RData")
-
 
 ```
 
-### moderate
+#### Integrate the result
 
 ```R
+Pagwas_l<-lapply(celltype,function(i){
+load(paste0("scpagwas_mild_",i,".RData"))
+ return(Pagwas)   
+})
+Pagwas <- merge_pagwas(Pagwas_list = Pagwas_l,n_topgenes = 1000)
+```
 
+### 3. moderate
+
+#### Run celltypes scPagwas result
+
+```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
 library(scPagwas)
  suppressMessages(library(Seurat))
  suppressMessages(library("dplyr"))
-data(Genes_by_pathway_kegg)
- data(block_annotation)
- data(chrom_ld)
  
 Pagwas<-scPagwas_main(Pagwas = NULL,
                      gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
-                     add_eqtls="OnlyTSS",
                        assay="RNA",
                      block_annotation = block_annotation,
                      Single_data = "/share2/pub/jiangdp/jiangdp/COVID/data/moderate_all.rds",
-                      output.prefix="test",
+                      output.prefix="COVID19moderate_kegg",
                      singlecell=F,
                      celltype=T,
                      Pathway_list=Genes_by_pathway_kegg,
@@ -408,55 +300,48 @@ Bootstrap_P_Barplot(p_results=Pagwas$bootstrap_results$bp_value[-1],
                                 height = 7,
                                 do_plot=F)
 
+ setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/test5.6")
+moderate_all<-readRDS("/share2/pub/jiangdp/jiangdp/COVID/data/moderate_all.rds")
 
-###########
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-data(Genes_by_pathway_kegg)
- data(block_annotation)
- data(chrom_ld)
-setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-Pagwas<-scPagwas_main(Pagwas = NULL,
-                     gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
-                     add_eqtls="OnlyTSS",
-                       assay="RNA",
-                     block_annotation = block_annotation,
-                     Single_data = "/share2/pub/jiangdp/jiangdp/COVID/data/moderate_all.rds",
-                     singlecell=F,
-                      output.prefix="moderate",
-                     celltype=T,
-                     Pathway_list=Genes_by_pathway_kegg,
-                     chrom_ld = chrom_ld)
-Pagwas$Pathway_ld_gwas_data<-NULL
-save(Pagwas,file="scpagwas_moderate.v1.73.RData")
+lapply(as.vector(unique(Idents(moderate_all))),function(x){
+  a<-moderate_all[,Idents(moderate_all)==x] 
+  saveRDS(a,file=paste0("/share/pub/dengcy/GWAS_Multiomics/test/covid19/moderate_",x,".rds"))
+})
 ```
 
-#### based on v1.7.3 to v1.9.1
+#### Run sub celltypes
 
 ```R
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
- setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell ","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
-i<-celltype[1]
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_moderate_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/moderate_",i,".rds"))
-Pagwas1<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-#rm(Pagwas)
-for(i in celltype[2:12]){  
-print(i)
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_moderate_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/moderate_",i,".rds"))
-Pagwas<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-Pagwas1<-merge(Pagwas1,y= Pagwas, project = "merged", merge.data = TRUE)  
-    #rm(Pagwas)
+celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
+
+for(i in celltype){
+Pagwas<-scPagwas_main(Pagwas = NULL,
+                       gwas_data ="/share/pub/dengcy/GWAS_Multiomics/test/covid19/COVID19_GWAS.txt",
+                       assay="RNA",
+                     block_annotation = block_annotation,
+                     Single_data = paste0("/share/pub/dengcy/GWAS_Multiomics/test/covid19/moderate_",i,".rds"),
+                      output.prefix="COVID19moderate_kegg",
+                     output.dirs=i,
+                      ncores=5,
+                     Pathway_list=Genes_by_pathway_kegg,
+                     chrom_ld = chrom_ld)
+save(Pagwas,file=paste0("scpagwas_moderate_",i,".RData"))
 }
-save(Pagwas1,file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_moderate.v1.91.RData")
 ```
 
-### normal
+#### Integrate the result
+
+```R
+Pagwas_l<-lapply(celltype,function(i){
+load(paste0("scpagwas_moderate_",i,".RData"))
+ return(Pagwas)   
+})
+Pagwas <- merge_pagwas(Pagwas_list = Pagwas_l,n_topgenes = 1000)
+```
+
+
+
+### 4. normal
 
 ```R
 
@@ -506,28 +391,7 @@ Pagwas$Pathway_ld_gwas_data<-NULL
 save(Pagwas,file="scpagwas_Normal.v1.73.RData")
 ```
 
-#### based on v1.7.3 to v1.9.1
 
-```R
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
- setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/testsplit5.16")
-celltype<-c("Effector CD8+T cell","Memory CD8+T cell","Naive CD8+T cell" ,"Naive CD4+T cell" ,"Memory CD4+T cell ","CD14+monocyte","NK","Naive B cell", "CD16+monocyte","DC","Platelet","CD34+Progenitor" )
-i<-celltype[1]
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_Normal_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/Normall_",i,".rds"))
-Pagwas1<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-
-for(i in celltype[2:12]){  
-    print(i)
-load(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/scpagwas_Normal_",i,".RData"))
-Single_data<-readRDS(paste0("/share2/pub/jiangdp/jiangdp/COVID/data/Normal_",i,".rds"))
-Pagwas<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000)
-Pagwas1<-merge(Pagwas1,y= Pagwas, project = "merged", merge.data = TRUE)   
-}
-save(Pagwas1,file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_Normal.v1.91.RData")
-```
 
 ## Visualize the result
 
@@ -658,44 +522,4 @@ save(Pagwas1，file="/share/pub/dengcy/GWAS_Multiomics/test/covid19/scpagwas_Nor
 ```
 
 
-
-## New 64w covid data：
-
-```R
-library(scPagwas)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
- data(Genes_by_pathway_kegg)
- #gene annotation files.
- data(block_annotation)
- #LD datas
- data(chrom_ld)
-#/share2/pub/zhenggw/zhenggw/COVID_combined/covid_64w_raw.rds
-setwd("/share/pub/dengcy/GWAS_Multiomics/test/covid19/")
-a<-readRDS("/share2/pub/zhenggw/zhenggw/COVID/covid_64w_new.rds")
-
-ci<-c("Severe","Asymptomatic","Mild","Healthy","Critical","Moderate","LPS_10hours","LPS_90mins")
-i<-ci[8]
-a1<-a[,a$Status_on_day_collection_summary==i]
-Idents(a1)<-a1$full_clustering
-rm(a)
-Pagwas<-scPagwas_main(Pagwas = NULL,
-                     gwas_data ="/share2/pub/jiangdp/jiangdp/COVID/data/COVID19_GWAS.txt",
-                       assay="RNA",
-                     block_annotation = block_annotation,
-                     Single_data = a1,
-                      output.prefix=paste0(i,"2"),
-                     singlecell=F,
-                     celltype=T,
-                     Pathway_list=Genes_by_pathway_kegg,
-                     chrom_ld = chrom_ld)
-save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/test/covid19/covid2_",i,"_Pagwas.RData"))
-Bootstrap_P_Barplot(p_results=Pagwas$bootstrap_results$bp_value[-1],
-                                p_names=rownames(Pagwas$bootstrap_results)[-1],
-                                title = i,
-                                figurenames = paste0("barplot_",i,"_kegg2.pdf"),
-                                width = 5,
-                                height = 7,
-                                do_plot=F)
-```
 

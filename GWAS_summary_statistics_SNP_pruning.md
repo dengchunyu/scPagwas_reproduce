@@ -207,7 +207,7 @@ gc()
 
 #### 3.Behavior-cognitive phenotype
 
-```
+```R
 library(readr)
 setwd("/share/pub/mayl/Sherlock/00_IEU_GWAS/03_Behavior_cognitive_phenotype")
 ############
@@ -253,7 +253,7 @@ gc()
 
 /share/pub/mayl/Sherlock/00_IEU_GWAS/04_Metabolic_disease
 
-```
+```R
 library(readr)
 setwd("/share/pub/mayl/Sherlock/00_IEU_GWAS/04_Metabolic_disease")
 ############
@@ -346,27 +346,12 @@ write.table(gwas_data,file="/share/pub/dengcy/GWAS_Multiomics/gwasdata/predata/U
 
 a<-c(
 CoeliacDisease="./CoeliacDisease/dubois_2010_20190752_cel_efo0001060_1_gwas.sumstats.tsv.gz",
-#CrohnDisease="./CrohnDisease/franke_2010_21102463_cro_efo0000384_1_gwas.sumstats.tsv.gz",#
-#ATD="./ATD/cooper_2012_22922229_atd_efo0006812_1_ichip.sumstats.tsv.gz"#数据不合适
 T1D="./T1D_Nature_2021/GCST90014023_buildGRCh38.tsv"
 )
 
 ####CoeliacDisease
 GWAS_raw <-read_table(a[1])
-###
-#cols(
-#  chrom = col_double(),
-#  pos = col_double(),
-#  rsid = col_character(),
-#  other_allele = col_character(),
-#  effect_allele = col_character(),
-#  p = col_double(),
-#  beta = col_double(),
-#  se = col_double(),
-#  OR = col_double(),
-#  OR_lower = col_double(),
-#  OR_upper = col_double()
-#)
+
 
 gwas_data<-GWAS_raw[,c(1,2,3,6,7,8)]
 colnames(gwas_data)<-c("chrom","pos","rsid","p","beta","se")
@@ -416,7 +401,7 @@ gc()
 
 #### 6. Cardiovascular_disease
 
-```
+```R
 
 library(readr)
 setwd("/share/pub/mayl/Sherlock/00_IEU_GWAS/06_Cardiovascular_disease")
@@ -511,7 +496,7 @@ gc()
 
 #### Check the data format
 
-```
+```shell
 cd /share/pub/dengcy/GWAS_Multiomics/gwasdata/predata
 for i in `ls`
 do
@@ -524,7 +509,7 @@ done
 
 ## First section
 #### Refence LD based on the 1000Genome_European_Phase3
-```
+```shell
 #/share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink
 /share/pub/mayl/ABC_model/ldsc/data_ldsc/02_partitioned_LD_score_estimation/1000G_EUR_Phase3_plink
 #Chr1-22
@@ -564,7 +549,7 @@ sed -n '/^22/p' /share/pub/jiangdp/Pagwas/GWAS/04_Metabolic_disease/WHR/WHR.txt
 
 ## Second Section
 
-```
+```shell
 #GWAS Summary statistics file
 cd /share/pub/dengcy/GWAS_Multiomics/gwasdata
 mkdir tempfile
@@ -583,7 +568,7 @@ done
 Extract a subset of SNPs: "file-list" option
 To extract only a subset of SNPs, it is possible to specify a list of required SNPs and make a new file, or perform an analysis on this subset, by using the command
 
-```
+```shell
 plink --file data --extract mysnps.txt
 ```
 
@@ -592,7 +577,7 @@ plink --file data --extract mysnps.txt
      snp008
      snp101
 
-```
+```shell
 #!/usr/bin/env bash
 #PBS -N plink1
 #PBS -q workq
@@ -615,7 +600,7 @@ done
 
 ### 1 The VIF pruning routine is performed:
 
-```
+```shell
 nohup plink --file data --indep 50,5,2
 ```
 
@@ -634,7 +619,7 @@ both these files can subsequently be specified as the argument for a --extract o
 5. A VIF of 1 would imply that the SNP is completely independent of all other SNPs. Practically, values between 1.5 and 2 should probably be used; particularly in small samples, if this threshold is too low and/or the window size is too large, too many SNPs may be removed.
 
 ### 2 The second procedure is performed:
-```
+```shell
 plink --file data --indep-pairwise 50 5 0.5
 ```
 
@@ -646,11 +631,11 @@ plink --file data --indep-pairwise 50 5 0.5
      c) shift the window 5 SNPs forward and repeat the procedure.
 
 ### 3 To make a new, pruned file, then use something like (in this example, we also convert the standard PED fileset to a binary one):
-```
+```shell
 plink --file data --extract plink.prune.in --make-bed --out pruneddata
 ```
 
-```
+```shell
 #!/usr/bin/env bash
 #PBS -N plink1
 #PBS -q workq
@@ -673,7 +658,7 @@ done
 
 bind the SNP：
 
-```
+```shell
 ###
 cd /share/pub/dengcy/GWAS_Multiomics/gwasdata/tempfile/
 for j in MDD ADHD ASD PD BID EP Focal_EP Generalized_EP Juvenile_EP Migraine Multiple_sclerosis smokingCessation OpennessToExperence Happiness CognitivePerformance SubjectWellBeing BMI WHR WC Obesity TC LDL HDL IBD PBC CoeliacDisease T1D DBP_EastAsian DBP_European PR_EastAsian SBP CAD T2D UlcerativeColitis AD
@@ -766,7 +751,7 @@ done
 
 bind the gwas
 
-```
+```shell
 library(readr)
 library(dplyr)
 
@@ -783,7 +768,7 @@ gc()
 }
 ```
 
-## blood traits gwas 数据的处理
+## Deal with blood traits gwas
 
 ### basophil cell count
 

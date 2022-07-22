@@ -13,7 +13,7 @@ as previously described
 > (Vuckovic, D. et al. The Polygenic and Monogenic Basis of Blood Traits and Diseases. Cell 182, 1214–1231.e11 (2020)). 
 
 ### blood traits：
-Data and Code Availability Summary statistics are available to download from: ftp://ftp.sanger.ac.uk/pub/project/humgen/summary_statistics/UKBB_blood_cell_traits/ for UK Biobank and http://www.mhi-humangenetics.org/en/resources for the meta-analysis. The accession numbers for the UK Biobank summary statistics reported in this paper are GWAS Catalog: GCST90002379–GCST90002407.
+Data and Code Availability Summary statistics are available to download from: ftp://ftp.sanger.ac.uk/pub/project/humgen/summary_statistics/UKBB_blood_cell_traits/ for UK Biobank and http://www.mhi-humangenetics.org/en/resources for the meta-analysis. The accession numbers for the UK Biobank summary statistics reported in this paper are: 
 
 - basophil cell count
   Dataset: ieu-b-29
@@ -42,7 +42,7 @@ Data and Code Availability Summary statistics are available to download from: ft
 
 ### 1.prepare the singlecell result
 
-#### single cell data
+#### PBMC single cell data
 
 ```R
 
@@ -100,11 +100,45 @@ Idents(NM_Healthy_pbmc)<-NM_Healthy_pbmc$initial_clustering
 saveRDS(NM_Healthy_pbmc,file="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds")
 ```
 
+#### BMMC single cell data
+
+```R
+library("scPagwas")
+library("Seurat")
+library("scRNAseq")
+library("SingleCellExperiment")
+library("stringr") 
+scRNA_Healthy_Hema<-readRDS("E:/OneDrive/SingleCell/data/PBMCscATAC-seq/scRNA-Healthy-Hematopoiesis-191120.rds")
+counts <- assay(scRNA_Healthy_Hema, "counts")
+Seu_Healthy_Hema <- CreateSeuratObject(
+               counts = counts, 
+               meta.data=as.data.frame(colData(scRNA_Healthy_Hema)),
+               min.cells = 3, 
+               min.features = 200)
+
+Idents(Seu_Healthy_Hema)<-scRNA_Healthy_Hema@colData$BioClassification
+table(Idents(Seu_Healthy_Hema))
+
+        01_HSC 02_Early.Eryth  03_Late.Eryth  04_Early.Baso    05_CMP.LMPP       06_CLP.1 
+          1425           1653            446            111           2260            903 
+        07_GMP    08_GMP.Neut         09_pDC         10_cDC 11_CD14.Mono.1 12_CD14.Mono.2 
+          2097           1050            544            325           1800           4222 
+  13_CD16.Mono         14_Unk       15_CLP.2       16_Pre.B           17_B      18_Plasma 
+           292            520            377            710           1711             62 
+      19_CD8.N      20_CD4.N1      21_CD4.N2       22_CD4.M      23_CD8.EM      24_CD8.CM 
+          1521           2470           2364           3539            796           2080 
+         25_NK         26_Unk 
+          2143            161 
+
+Seu_Healthy_Hema <- ScaleData(Seu_Healthy_Hema)
+Seu_Healthy_Hema <- NormalizeData(Seu_Healthy_Hema, normalization.method = "LogNormalize", scale.factor = 10000)
+
+```
+
 #### Run the single_data_input
 
 ```R
-######################################################
-traits<-c("basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+####PBMC
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare")
  library(scPagwas)
  suppressMessages(library(Seurat))
@@ -118,14 +152,8 @@ Single_data=readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy
                                  )
 save(Pagwas ,file="NM_Healthy_pbmc_prePagwas.RData")
 
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare")
- library(scPagwas)
- suppressMessages(library(Seurat))
-###########
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare")
+##BMMC
 library(scPagwas)
-
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
   Pagwas <- Single_data_input(Pagwas=NULL,
                                 assay="RNA",
@@ -136,8 +164,6 @@ Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_
                                  )
 save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Seu_Healthy_Hema_kegg_prePagwas.RData")
 ```
-
-
 
 ### 2.Run scPagwas
 
@@ -159,7 +185,6 @@ Pagwas<-scPagwas_main(Pagwas =Pagwas,
                      gwas_data =paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"prune_gwas_data.txt"),
                      Single_data ="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds",
                      output.prefix=i,
-                     seruat_return=F,
                      Pathway_list=Genes_by_pathway_kegg,
                      output.dirs=paste0(i,"_scPagwas"),
                      ncores=2,
@@ -190,7 +215,6 @@ for(i in traits){
                      Single_data ="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds",
                      output.prefix=i,
                            singlecell=F,
-                           seruat_return=T,
                      Pathway_list=Genes_by_pathway_kegg,
                      output.dirs=paste0(i,"_pbmc_scPagwasv1.9"),
                      ncores=5,
@@ -211,6 +235,9 @@ setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc")
 suppressMessages(library(Seurat))
 load("/share/pub/dengcy/GWAS_Multiomics/compare/NM_Healthy_pbmc_prePagwas.RData")
 
+traits2<-c("basophilcount",,"Lymphocytecount3","monocytecount","Hemoglobinconcen","MeanCorpusVolume")
+
+for(i in traits2){
      Pagwas<-scPagwas_main(Pagwas =Pagwas,
                      gwas_data =paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_prune_gwas_data.txt"),
                      Single_data ="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds",
@@ -224,11 +251,10 @@ load("/share/pub/dengcy/GWAS_Multiomics/compare/NM_Healthy_pbmc_prePagwas.RData"
                      block_annotation = block_annotation,
                      chrom_ld = chrom_ld)
   save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/",i,"_pbmc_scPagwas_singlecell.RData"))
+}
 ```
 
 ### 4.Integrate bmmc result and visualize
-
-#### 1.bmmc cell types p values
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
@@ -251,7 +277,6 @@ save(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/scPagwas_bmmc_l
 write.csv(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/scPagwas_bmmc_list.csv")
 
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc")
-traits<-c("basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
 
 result_list<-lapply(traits,function(i){
    print(i)

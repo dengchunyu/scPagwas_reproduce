@@ -2,7 +2,7 @@
 
 ## visualization for BMMC
 
-### 1.load the result and 
+### 1.load the result and plot
 
 ```R
 library(Seurat)
@@ -12,16 +12,19 @@ library(ggplot2)
 library(cowplot)
 library(stringr)
 library(ggtext)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
- library(scPagwas)
- suppressMessages(library(Seurat))
+library(scPagwas)
+suppressMessages(library(Seurat))
 library(org.Hs.eg.db)
 library(dplyr)
+
+setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
+
 traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
+
+Seu_Hema_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 
 pdf(file="Seu_Hema_seurat_TSNE.pdf",height=10,width=10)
-DimPlot(Pagwas,group.by="celltypes",reduction="tsne",pt.size=0.5,label = TRUE, repel=TRUE,label.size = 4)+ 
+DimPlot(Seu_Hema_data,group.by="celltypes",reduction="tsne",pt.size=0.5,label = TRUE, repel=TRUE,label.size = 4)+ 
 umap_theme()+ labs(x="TSNE",y="")+
 ggtitle("BMMC")+
         scale_colour_manual(name = "celltypes", values = color_scanpy_viridis28) +
@@ -33,32 +36,14 @@ dev.off()
 ### 2.tsne plot for different traits
 
 ```R
-i<-"Lymphocytecount2"
-i<-"monocytecount"
-i<-"MeanCorpusVolume"
-i<-"Hemoglobinconcen"
 
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i,"_Hema_bmmc_scPagwas_v1.9.RData"))
+for(i in c("Lymphocytecount3","monocytecount","MeanCorpusVolume","Hemoglobinconcen")){
+ load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
 
     all_fortify_can <- fortify.Seurat.tsne(Pagwas)
-    p1<- ggplot() +
-        geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =sclm_score), size = 0.2, alpha = 1) +
-        umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D")+
-        theme(aspect.ratio=1) +
-        theme(legend.text=element_markdown(size=14),
-              legend.title=element_text(size=14)) +
-        guides(colour = guide_legend(override.aes = list(size=3)))  +
-        ggtitle(i)
-
-        pdf(file=paste0("TSNE.",i,".sclm_score.pdf"),width = 8, height = 8)
-        print(p1)
-        dev.off()
-
         p2<- ggplot() +
         geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.lmtopgenes.Score1), size = 0.2, alpha = 1) +
+                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.TRS.Score1), size = 0.2, alpha = 1) +
         umap_theme() +
         scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
                              midpoint = median(all_fortify_can$scPagwas.lmtopgenes.Score1)
@@ -69,55 +54,25 @@ load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i
         guides(colour = guide_legend(override.aes = list(size=3)))  +
         ggtitle(i)
 
-        pdf(file=paste0("TSNE.",i,".scPagwas.topgenes.Score1.pdf"),width = 8, height = 8)
+        pdf(file=paste0("TSNE.",i,".scPagwas.TRS.Score1.pdf"),width = 8, height = 8)
         print(p2)
         dev.off()
+}
 
 ```
 
-### 3.Barplot for scPagwas TRS score
+### 3.Barplot and dotplot for scPagwas TRS score
 
 ```R
-setwd("E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize")
+
 ######################
-traits2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
-
- celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
-      "02_Early.Eryth" , "03_Late.Eryth" , "04_Early.Baso","08_GMP.Neut", 
-      "09_pDC","10_cDC" ,
-     "11_CD14.Mono.1","12_CD14.Mono.2","13_CD16.Mono","14_Unk",
-     "16_Pre.B","17_B","18_Plasma",
-      "19_CD8.N","20_CD4.N1","21_CD4.N2","22_CD4.M","23_CD8.EM","24_CD8.CM",
-      "25_NK",
-      "26_Unk"
-     )
-celltypecolor<-c("FD5D5D","#FF8080","#FFC3C3","#FFCBCB",
-    "#E26A2C","#FF6701","#FF8243","#FDA65D","#FFD07F",
-    "#219F94","#C1DEAE",
-    "#52734D","#91C788","#DDFFBC","#FEFFDE",
-    "#F875AA","#FBACCC","#F1D1D0",
-"#2F8F9D","#68A7AD","#3BACB6","#82DBD8","#B3E8E5","#CCF3EE",
-    "#7C9473",
-    "#AA8976"
-)
-for(i in traits){
-    print(i)
-    i<-"monocytecount"
- load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData")) 
-
-p <- ggplot(gg_gsva2, aes(x = ImmuneCell, y =ssGsva_score,fill=cluster))+
-geom_boxplot(outlier.size = 0.6,alpha=0.6)+theme_classic()+
-theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1),legend.position = "top")+labs(x = "",y="",title=i)
-    
-    }
-
 library(ggplot2)
 library(ggthemes)
 library(ggpubr)
 library(RColorBrewer)
 setwd("E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize")
 ######################
-traits2<-c("LymphocytePercent","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
+traits2<-c("Lymphocytecount3","MeanCorpuscularHemoglobin","MeanCorpusVolume","monocytecount","Plateletcount")
 
 celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
                 "02_Early.Eryth" , "03_Late.Eryth" , "04_Early.Baso","08_GMP.Neut", 
@@ -138,8 +93,7 @@ celltypecolor<-c("#CB181D","#D7403E","#E3695F","#EF9280",
                  "#555555"
 )
 
-i<-"monocytecount"
-i<-"MeanCorpusVolume"
+for(i in traits2){
   load(paste0(i,"_meta.data.RData")) 
   head(meta.data)
   meta.data$celltypes<-factor(meta.data$celltypes,levels =celltyperank )
@@ -210,219 +164,7 @@ i<-"MeanCorpusVolume"
  pdf(paste0(i,"dotplot_Cells.adjPvalue.pdf"),width =9,height = 1)
  print(p3)
  dev.off()
-
-```
-
-### 4 Lymphocyte：
-
-```R
-load("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.7.3.RData") 
-library(Seurat)
-library(dplyr)
-library(patchwork)
-library(ggplot2)
-library(cowplot)
-library(stringr)
-library(ggtext)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
- library(scPagwas)
- suppressMessages(library(Seurat))
-
-#Pagwas@misca
-scPagwastop1000 <- names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation, decreasing = T),])[1:1000]
-scPagwastop500 <- names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation, decreasing = T),])[1:500]
-
-load(paste0(i,"_magma_genes.RData"))
-
-magmatop1000<-intersect(magma_genes$symbol[1:1000],rownames(Pagwas))
- magmatop500<-intersect(magma_genes$symbol[1:500],rownames(Pagwas))
-
-topgene<-list(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500)
-names(topgene)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
-
-
-    Pagwas <- AddModuleScore(Pagwas, assay = "RNA", topgene, name = c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500"))
-save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.7.3.RData")
-    
-    all_fortify_can <- fortify.Seurat.tsne(Pagwas)
-
-save(all_fortify_can,file="all_fortify_can.RData")
-    p1<- ggplot() +
-        geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.topgenes.Score1), size = 0.2, alpha = 1) +
-        umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             midpoint = median(all_fortify_can$scPagwas.topgenes.Score1))+
-        theme(aspect.ratio=1) +
-        theme(legend.text=element_markdown(size=14),
-              legend.title=element_text(size=14)) +
-        guides(colour = guide_legend(override.aes = list(size=3)))  +
-        ggtitle("Lymphocytecount")
-ggsave(p1,file="E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize/TSNE.Lymphocytecount3.scPagwas1000.pdf",width = 8, height = 8)
-        pdf(file="TSNE.Lymphocytecount3.scPagwas1000.pdf",width = 8, height = 8)
-        print(p1)
-        dev.off()
-
-```
-
-#### Lymphocyte run magma
-
-```R
-i<-"Lymphocytecount3"
-gwas<-bigreadr::fread2(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_gwas_data.txt"))
-gwas$N<-62076
-print(head(gwas))
-magma_Input1<-gwas[,c("rsid","p","N")]
-magma_Input2<-gwas[,c("rsid","chrom","pos","pos")]
-write.table(magma_Input2,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_",i,"Input2.txt"),sep="\t",row.names=F,quote=F,col.names=F)
-colnames(magma_Input1)<-c("SNP","P","N")
-write.table(magma_Input1,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_",i,"Input1.txt"),sep="\t",row.names=F,quote=F)
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in Lymphocytecount3 
-do
-./magma --annotate window=10,10 --snp-loc /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input2.txt \
---gene-loc /share/pub/dengcy/Singlecell/COVID19/MAGMA/NCBI/NCBI37.3.gene.loc.extendedMHCexcluded \
---out /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10_down
-done
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in Lymphocytecount3 
-do
-./magma --bfile /share/pub/dengcy/Singlecell/COVID19/MAGMA/g1000_eur/g1000_eur \
---pval /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input1.txt ncol=3 \
---gene-annot /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10_down.genes.annot \
---out /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down
-done
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in Lymphocytecount3
-do
-int="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down.genes.raw"
-cell_type="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/Hema_top10.txt"
-./magma --gene-results  $int --set-annot  $cell_type --out /share/pub/dengcy/GWAS_Multiomics/compare/magma/${i}_magma_Hema
-done
-##################
-library(org.Hs.eg.db)
-library(dplyr)
-magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/",i,"annotated_10kbup_10down.genes.out"),header=T)
-#save(magma_genes,file=paste0(i,"_magma_genes.RData"))
-g2s=toTable(org.Hs.egSYMBOL)
-magma_genes$gene_id<-magma_genes$GENE
-magma_genes=merge(magma_genes,g2s,by="gene_id",all.x=T)
-magma_genes<-na.omit(magma_genes)
-magma_genes<-magma_genes[order(magma_genes$P,decreasing=F),]
-save(magma_genes,file=paste0(i,"_magma_genes.RData"))
-
-```
-
-barp[lot]
-
-```R
- celltyperank<-c("01_HSC", "05_CMP.LMPP","06_CLP.1","15_CLP.2","07_GMP",
-      "02_Early.Eryth" , "03_Late.Eryth" , "04_Early.Baso","08_GMP.Neut", 
-      "09_pDC","10_cDC" ,"11_CD14.Mono.1","12_CD14.Mono.2","13_CD16.Mono","14_Unk",
-     "16_Pre.B","17_B","18_Plasma",
-      "19_CD8.N","20_CD4.N1","21_CD4.N2","22_CD4.M","23_CD8.EM","24_CD8.CM",
-      "25_NK",
-      "26_Unk")
-celltypecolor<-c("FD5D5D","#FF8080","#FFC3C3","#FFCBCB",
-    "#E26A2C","#FF6701","#FF8243","#FDA65D","#FFD07F",
-    "#219F94","#C1DEAE",
-    "#52734D","#91C788","#DDFFBC","#FEFFDE",
-    "#F875AA","#FBACCC","#F1D1D0",
-"#2F8F9D","#68A7AD","#3BACB6","#82DBD8","#B3E8E5","#CCF3EE",
-    "#7C9473",
-    "#AA8976")
-
-library(ggplot2)
-library(ggthemes)
-library(ggpubr)
-library(RColorBrewer)
-setwd("E:/OneDrive/GWAS_Multiomics/Compare/IntegrateVisulize")
-######################
- 
-celltypecolor<-c("#CB181D","#D7403E","#E3695F","#EF9280",
-                 "#CD9B1D","#EEB422","#F1C148","#FFE557","#FFF3B0",
-                 "#2171B5","#73A5D2",
-                 "#7F2704","#A95426","#BE6A37","#D38148",
-                 "#3F007D","#653698","#8C6DB3",
-                 "#0E4F27","#2A653F","#39704C","#558664","#80A789","#BAD3BB",
-                 "#763857",
-                 "#555555"
-)
-
-  #load(paste0(i,"_meta.data.RData")) 
-  head(all_fortify_can)
-  all_fortify_can$celltypes<-factor(all_fortify_can$celltypes,levels =celltyperank)
-
-  p <- ggplot(all_fortify_can, aes(x = celltypes, 
-                             y =scPagwastop10001,
-                             fill=celltypes,
-                             color=celltypes))+
-    geom_boxplot(outlier.size = 0.2,alpha=1)+
-    scale_fill_manual(values = celltypecolor)+
-    scale_color_manual(values = celltypecolor)+
-    theme_light()+
-    theme(axis.text.x = element_text(angle =90,vjust = 1,hjust = 1),
-          legend.position="none")+
-    labs(x = "",y="",title=i)
-  pdf(paste0(i,"boxplot_scPagwas.pdf"),width =8,height = 5)
-  print(p)
-  dev.off()
-  
-##########scPagwas500_scdrs.raw_score点图
- a1<- tapply(all_fortify_can$scPagwastop10001, all_fortify_can$celltypes, function(x){
-    mean(x)
-  })
- a2<- tapply(all_fortify_can$scPagwastop5003, all_fortify_can$celltypes, function(x){
-   mean(x)
- })
- a3<- tapply(all_fortify_can$magmatop10002, all_fortify_can$celltypes, function(x){
-   mean(x)
- })
- a4<- tapply(all_fortify_can$magmatop5004, all_fortify_can$celltypes, function(x){
-   mean(x)
- })
- 
-  df<-data.frame(scPagwas1000=a1,
-                 scPagwas500=a2,
-                 magma1000=a3,
-                 magma500=a4,
-                 celltypes=names(a1))
-  ggdf<-reshape2::melt( df,id.vars="celltypes")
-  ggdf$celltypes<-factor(ggdf$celltypes,levels =celltyperank )
-  ggdf$variable<-factor(ggdf$variable,levels =c("magma500","magma1000","scPagwas500","scPagwas1000") )
-  p2 = ggplot(ggdf,
-             aes(y=variable,
-                 x = celltypes)) +
-    geom_point(aes(colour=celltypes, size=value)) + 
-    scale_color_manual(values = celltypecolor,guide = "none")+
-    theme_light()#+
- pdf(paste0(i,"dotplot_score.pdf"),width =9,height =2.5)
- print(p2)
- dev.off()
-
-##########cell p value 百分比图
- a<- tapply(all_fortify_can$Cells.lm.adjp, all_fortify_can$celltypes, function(x){
-   sum(x<0.05)/length(x)
- })
- 
- df<-data.frame(Cells.adjPvalue=a,celltypes=names(a))
- df$celltypes<-factor(df$celltypes,levels =celltyperank )
- df$scPagwas<-"Cells.adjPvalue"
- p3 = ggplot(df,
-             aes(y=scPagwas,
-                 x = celltypes)) +
-   geom_point(aes(colour=celltypes, size=Cells.adjPvalue)) + 
-   scale_color_manual(values = celltypecolor,guide = "none")+
-   #scale_size(range=c(0, max.size)) +
-   theme_light()#+
- #theme(legend.position="none")
- pdf(paste0(i,"dotplot_Cells.adjPvalue.pdf"),width =9,height = 1)
- print(p3)
- dev.off()
-
+}
 ```
 
 ## visualization for pbmc
@@ -458,6 +200,8 @@ all_fortify_can <- fortify.Seurat.umap(Pagwas)
 ```
 
 ### 2.PBMC Hemoglobinconcen
+
+The names for TRS score is different for last version.
 
 ```R
 library(scPagwas)

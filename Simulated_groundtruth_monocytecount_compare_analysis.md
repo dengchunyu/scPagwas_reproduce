@@ -1,4 +1,6 @@
-# Construct the simulated data
+# Groudtruth data for real and simulated data
+
+## Construct the simulated data
 
 The FACS-sorted bulk hematopoietic populations data come from：
 
@@ -8,14 +10,16 @@ Interrogation of human hematopoiesis at single-cell and single-variant resolutio
 
 ```R
 library(scDesign2)
-library(copula)    # corKendall
+library(copula)    
 library(Rtsne)
-library(plyr)      # mapvalues
-library(reshape2)  # melt
-library(gridExtra) # arrangeGrob
-library(ggpubr)    # as_ggplot
-library(cowplot)   # draw_plot_label
-library(ggplot2); theme_set(theme_bw());
+library(plyr)     
+library(reshape2) 
+library(gridExtra)
+library(ggpubr)
+library(cowplot)
+library(ggplot2); 
+theme_set(theme_bw());
+
 set.seed(42)
 setwd("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth")
 bulk_count<-read.delim("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/16populations_RNAcounts.txt",header=T)
@@ -31,7 +35,6 @@ rownames(sim_count_1000)<-rownames(bulk_count2)
 saveRDS(copula_result, file = 'copula_result_population.rds')
 saveRDS(sim_count_1000, file = 'sim_count_1000_population.rds')
 
-#sim_count_1000<-readRDS("sim_count_1000.rds")
 #
 library(SeuratObject)
 library(Seurat)
@@ -49,86 +52,9 @@ Idents(sim_data)<-sim_data$celltype
 saveRDS(sim_data,file="sim_data.rds")
 ```
 
-### Construct the simulated data
+## scPagwas
 
 ```R
-library(scDesign2)
-library(copula)    # corKendall
-library(Rtsne)
-library(plyr)      # mapvalues
-library(reshape2)  # melt
-library(gridExtra) # arrangeGrob
-library(ggpubr)    # as_ggplot
-library(cowplot)   # draw_plot_label
-library(ggplot2); theme_set(theme_bw())
-library(SeuratObject)
-library(Seurat)
-set.seed(42)
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth")
-load("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/phe_NM_Healthy_pbmc.Rdata")
-Idents(NM_Healthy_pbmc)<-NM_Healthy_pbmc@meta.data$full_clustering
-#GetAssayData(object=NM_Healthy_pbmc[["RNA"]],slot="count")[1:5,1:5]
-
-NM_Healthy_pbmc<-subset(NM_Healthy_pbmc,idents=c("CD14_mono","CD16_mono","NK_16hi"))
-
-N1_pbmc<-subset(NM_Healthy_pbmc,idents=c("CD14_mono","CD16_mono"))
-Idents(N1_pbmc)<-N1_pbmc@meta.data$sample_id
-N1_pbmc_meanexpr <- AverageExpression(N1_pbmc, group.by = "ident",assays = "RNA",slot = "data")
-Mono_pbmc_meanexpr<-N1_pbmc_meanexpr[[1]]
-colnames(Mono_pbmc_meanexpr)<-paste0("Mono",1:ncol(Mono_pbmc_meanexpr))
-Mono_pbmc_meanexpr<-Mono_pbmc_meanexpr*10000
-
-N1_pbmc<-subset(NM_Healthy_pbmc,idents=c("NK_16hi"))
-Idents(N1_pbmc)<-N1_pbmc@meta.data$sample_id
-N1_pbmc_meanexpr <- AverageExpression(N1_pbmc, group.by = "ident",assays = "RNA",slot = "data")
-NK_pbmc_meanexpr<-N1_pbmc_meanexpr[[1]]
-colnames(NK_pbmc_meanexpr)<-paste0("NK",1:ncol(NK_pbmc_meanexpr))
-NK_pbmc_meanexpr<-NK_pbmc_meanexpr*10000
-
-
-bulk_count<-cbind(Mono_pbmc_meanexpr,NK_pbmc_meanexpr)
-#bulk_count<-apply(bulk_count,2,as.integer)
-rownames(bulk_count)<-rownames(NM_Healthy_pbmc)
-colnames(bulk_count)<-c(rep("Mono",23),rep("NK",24))
-
-copula_result <- fit_model_scDesign2(bulk_count, cell_type_sel=c('Mono','NK'), sim_method = 'copula',ncores = 10)
-
-sim_count_1000 <- simulate_count_scDesign2(copula_result, n_cell_new=1000, sim_method = 'copula',cell_type_prop = c(0.5,0.5))
-
-saveRDS(copula_result, file = 'copula_result2.rds')
-saveRDS(sim_count_1000, file = 'sim_count2_1000.rds')
-rownames(sim_count_1000)<-rownames(bulk_count)
-
-
-#sim_count_1000<-readRDS("sim_count_1000.rds")
-sim_data<-CreateSeuratObject(counts=sim_count_1000,assay = "RNA")
-sim_data$celltype<-colnames(sim_count_1000)
-sim_data$type<- c(rep(1,500),rep(0,500))
-sim_data <- NormalizeData(sim_data, normalization.method = "LogNormalize", scale.factor = 10000)
-sim_data <- ScaleData(sim_data)
-Idents(sim_data)<-sim_data$celltype
-sim_data <- FindVariableFeatures(sim_data,nfeatures = 3000)
-sim_data <- RunPCA(object = sim_data, assay = "RNA", npcs = 50)
-sim_data <- RunTSNE(object = sim_data,assay =  "RNA", reduction = "pca",dims = 1:50)
-sim_data <- RunUMAP(object = sim_data, assay = "RNA", reduction = "pca",dims = 1:50)
-
-#sim_data<-RunTsne(object=sim_data)
-saveRDS(sim_data,file="sim_data_NK.rds")
-############绘制模拟数据的tsne
-pdf(file="modeldata_UMAP.pdf",height=5,width=5)
-DimPlot(sim_data,group.by="celltype",reduction="umap",pt.size=0.3,label = TRUE, repel=TRUE,label.size = 4)+ 
-umap_theme()+ labs(x="UMAP",y="")+
-ggtitle("Model data")+
-        scale_colour_manual(name = "celltype", values = c("#ff7f0e","#1f77b4")) +
-        theme(aspect.ratio=1)
-dev.off()
-
-```
-
-### scPagwas
-
-```
  library(scPagwas)
  library(ggplot2)
  suppressMessages(library(Seurat))
@@ -140,7 +66,7 @@ i<-"monocytecount"
 Pagwas<-scPagwas_main(Pagwas = NULL,
 gwas_data=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_prune_gwas_data.txt"),
                      Single_data ="/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/sim_data.rds",
-                     output.prefix="modeldata_dc",
+                     output.prefix="modeldata_nk",
                      output.dirs="modeldata_outputv1.9.1",
                      block_annotation = block_annotation,
                      assay="RNA",
@@ -149,13 +75,9 @@ gwas_data=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_pr
                      singlecell=T,
                      seruat_return=T,
                      celltype=F,
-                     ncores = 15,
-                     split_n=1)
+                     ncores = 15)
                      
 save(Pagwas,file="Pagwas_monocytecount_nk_v1.9.1.RData")
-#load("Pagwas_monocytecount_nk_v1.9.1.RData")
-
-
  scPagwas_Visualization(Single_data=Pagwas,
                         p_thre = 0.05,
                         FigureType = "umap",
@@ -166,43 +88,9 @@ save(Pagwas,file="Pagwas_monocytecount_nk_v1.9.1.RData")
                         output.dirs="modeldata_outputv1.9.1",
                         size = 0.3,
                         do_plot = F)
-  
-   library(scPagwas)
- library(ggplot2)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth")
-
-Pagwas<-scPagwas_main(Pagwas = NULL,
-gwas_data="/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/Lymphocytecount3_gwas_data.txt",
-                     Single_data ="/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/sim_data_NK.rds",
-                     output.prefix="modeldata_NK",
-                     output.dirs="modeldata_Lymphocytecount_outputv1.9.1",
-                     block_annotation = block_annotation,
-                     assay="RNA",
-                     Pathway_list=Genes_by_pathway_kegg,
-                     chrom_ld = chrom_ld,
-                     singlecell=T,
-                     seruat_return=T,
-                     celltype=F,
-                     ncores = 15,
-                     split_n=1)
-save(Pagwas,file="Pagwas_Lymphocytecount_nk_v1.9.1.RData")
-
- scPagwas_Visualization(Single_data=Pagwas,
-                        p_thre = 0.05,
-                        FigureType = "umap",
-                        width = 5,
-                        height =5,
-                        lowColor = "white", 
-                        highColor = "red",
-                        output.dirs="modeldata_Lymphocytecount_outputv1.9.1",
-                        size = 0.3,
-                        do_plot = F)
 ```
 
-### Rolypoly
+## Rolypoly
 
 ```R
 lapply(list.files("/share/pub/dengcy/GWAS_Multiomics/Pkg/rolypoly-master/rolypoly-master/R/"),function(x){
@@ -248,7 +136,7 @@ return(rolypoly_result$block_heritability_contribution)
 }))
 ```
 
-#### Put the result for scPagwas: 
+#### Put the rolypoly  result to scPagwas: 
 
 ```R
  
@@ -275,7 +163,6 @@ save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monoc
 library(SeuratDisk)
 library(Seurat)
 
-#sim_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/sim_data_NK.rds")
 load("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/Pagwas_monocytecount_nk_v1.9.1.RData")
 
 DefaultAssay(Pagwas) <- "RNA"
@@ -536,7 +423,7 @@ print(p1)
 dev.off()
 ```
 
-### 4.Other methods: auccell， vision
+### 4.Other methods: auccell, vision
 
 ```R
 library(testSctpa)

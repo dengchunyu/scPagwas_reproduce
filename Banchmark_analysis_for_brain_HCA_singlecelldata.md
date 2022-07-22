@@ -27,7 +27,6 @@ scPagwas_results_list<-lapply(ds,function(i){
 names(scPagwas_results_list)<-ds
 save(scPagwas_results_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/scPagwas_results_list.RData")
 
-#Migraine没有
 scPagwas_HCA_list<-lapply(ds,function(i){
     message(i)
     load(paste0("scpagwas_HCA_",i,".RData"))
@@ -71,7 +70,6 @@ save(magma_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/magm
 /share2/pub/jiangdp/jiangdp/COVID/rolypoly/
 
 ```R
-#少了
 setwd("/share2/pub/jiangdp/jiangdp/COVID/rolypoly_mouse")
 ds<-c("MDD","ADHD","ASD","PD","BID","EP","Focal_EP","Generalized_EP","Juvenile_EP","Migraine","Multiple_sclerosis","smokingCessation","OpennessToExperence","Happiness","CognitivePerformance","SubjectWellBeing","BMI","WHR","WC","Obesity","TC","LDL","HDL","IBD","PBC","CoeliacDisease","T1D","DBP_EastAsian","DBP_European","PR_EastAsian","SBP","CAD","T2D","UlcerativeColitis","AD")
 
@@ -96,7 +94,7 @@ save(rolypoly_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/r
 
 #### 1.4.ldsc
 
-软件地址：/share2/pub/zhenggw/zhenggw/anaconda3/envs/ldsc/
+/share2/pub/zhenggw/zhenggw/anaconda3/envs/ldsc/
 
 ```R
 setwd("/share2/pub/zhenggw/zhenggw/scPagwas_LDSC/brain_results")
@@ -153,7 +151,6 @@ load("scPagwas_brain_list.RData")
 load("magma_brain_list.RData")
 load("rolypoly_brain_list.RData")
 load("ldsc_brain_result.RData")
-#load("magma_HCA_list.RData")
 
 scPagwas_brain_p<-as.data.frame(lapply(scPagwas_results_list,function(df){
   a<- -log2(df$bp_value)
@@ -256,6 +253,7 @@ rdf<-rbind(scPagwas_brain_p,
            magma_brain_p,
            rolypoly_brain_p,
            ldsc_brain_p)
+#
 rdf$phenotypes[which(rdf$phenotypes=="Multiple_sclerosis")]<-"MS"
 rdf$phenotypes[which(rdf$phenotypes=="smokingCessation")]<-"SC"
 rdf$phenotypes[which(rdf$phenotypes=="OpennessToExperence")]<-"Openness"
