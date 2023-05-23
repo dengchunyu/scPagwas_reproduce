@@ -39,7 +39,7 @@ save(scPagwas_HCA_list,file="/share/pub/dengcy/GWAS_Multiomics/banchmarkresult/s
 
 #### 1.2.magma 
 
-地址：/share/pub/dengcy/Singlecell/COVID19/MAGMA
+/share/pub/dengcy/Singlecell/COVID19/MAGMA
 
 PR_EastAsian_magma_mouse_brain.gsa.out
 

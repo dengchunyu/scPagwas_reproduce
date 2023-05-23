@@ -1,5 +1,3 @@
- 血细胞trait进行scPagwas的计算
-
 [toc]
 
 <html>
@@ -39,6 +37,8 @@ Data and Code Availability Summary statistics are available to download from: ft
 
 
 ## PBMC and BMMC scRNA-seq data
+
+
 
 ### 1.prepare the singlecell result
 
@@ -105,7 +105,6 @@ saveRDS(NM_Healthy_pbmc,file="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/N
 ```R
 library("scPagwas")
 library("Seurat")
-library("scRNAseq")
 library("SingleCellExperiment")
 library("stringr") 
 scRNA_Healthy_Hema<-readRDS("E:/OneDrive/SingleCell/data/PBMCscATAC-seq/scRNA-Healthy-Hematopoiesis-191120.rds")
@@ -187,11 +186,10 @@ Pagwas<-scPagwas_main(Pagwas =Pagwas,
                      output.prefix=i,
                      Pathway_list=Genes_by_pathway_kegg,
                      output.dirs=paste0(i,"_scPagwas"),
-                     ncores=2,
                       assay="RNA",
                      block_annotation = block_annotation,
                      chrom_ld = chrom_ld)
-  save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
+  save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
  }
 ```
 
@@ -254,7 +252,7 @@ for(i in traits2){
 }
 ```
 
-### 4.Integrate bmmc result and visualize
+### 4.Integrate bmmc result
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
@@ -749,7 +747,7 @@ for(i in traits){
     print(i)
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
     Celltype_anno<-Pagwas@misc$Celltype_anno
-magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/",i,"annotated_10kbup_10down.genes.out"),header=T)
+magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/",i,"_10kbup_10down.genes.out"),header=T)
 #save(magma_genes,file=paste0(i,"_magma_genes.RData"))
 magma_genes$gene_id<-magma_genes$GENE
 magma_genes=merge(magma_genes,g2s,by="gene_id",all.x=T)
@@ -803,6 +801,15 @@ DefaultAssay(Single_data) <- "RNA"
 SaveH5Seurat(Single_data, "Seu_Hema_addata.h5seurat")
 Convert("Seu_Hema_addata.h5seurat", dest="h5ad")
 write.csv(Single_data@meta.data,file="Seu_Hema.metadata.csv")
+
+#########cov files
+for(i in c("Lymphocytecount3","monocytecount","MeanCorpusVolume")){
+    print(i)
+load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
+a<-data.frame(index=rownames(Pagwas@meta.data),const=rep(1,ncol(Pagwas)))
+write.table(a,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scRDS_",i,".cov"),row.names = F,quote=F,sep="\t")
+}
+
 ```
 
 #### 1.2 scDRS
@@ -831,7 +838,8 @@ DATA_PATH = "/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test"
 H5AD_FILE = os.path.join(DATA_PATH, "Seu_Hema_addata.h5ad")
 adata = scdrs.util.load_h5ad(H5AD_FILE, flag_filter_data=False, flag_raw_count=False)
 
-traits = ['eosinophilcount','Lymphocytecount3','monocytecount','neutrophilcount','WhiteBloodCellcount','MeanCorpuscularHemoglobin','MeanCorpusVolume',"basophilcount","LymphocytePercent"]
+traits = ['Lymphocytecount3']
+#['eosinophilcount','Lymphocytecount3','monocytecount','neutrophilcount','WhiteBloodCellcount','MeanCorpuscularHemoglobin','MeanCorpusVolume',"basophilcount","LymphocytePercent"]
 
 scdrs.preprocess(adata) 
 for i in traits:
@@ -857,7 +865,34 @@ for i in traits:
  df_res.to_csv("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/"+i+".500magma.df_res.csv", sep=",", index=False)
  print (i)
 
+
 ```
+
+```
+
+cd /share/pub/dengcy/GWAS_Multiomics/Pkg/scDRS
+python compute_score.py \
+    --h5ad_file /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Seu_Hema_addata.h5ad\
+    --h5ad_species human\
+    --cov_file /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scRDS_monocytecount.cov\
+    --gs_file /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/monocytecount.geneset.gs\
+    --gs_species human\
+    --n_ctrl 20\
+    --out_folder /share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/
+
+
+python compute_downstream.py \
+    --h5ad_file ${h5ad_file}.h5ad \
+    --score_file @.full_score.gz \
+    --cell_type celltypes \
+    --cell_variable causal_variable,non_causal_variable,covariate\
+    --flag_gene True\
+    --flag_filter False\
+    --flag_raw_count False\ # flag_raw_count is set to `False` because the toy data is already log-normalized, set to `True` if your data is not log-normalized
+    --out_folder ${out_dir}
+```
+
+
 
 #### 1.3 Other methods：
 
@@ -868,10 +903,10 @@ library(GSVA)
 library(VISION)
 library(AUCell)
 library(Seurat)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/comparegroudtruth")
+setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 i<-"monocytecount"
-i<-"basophilcount"
+i<-"Lymphocytecount3"
 load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scPagwas.magmatopgenes_",i,".RData"))
 names(topgene)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
 Single_data <- Seurat::AddModuleScore(Single_data, assay = "RNA", topgene, name = c("scPagwastop1000.seruatscore","magmatop1000.seruatscore","scPagwastop500.seruatscore","magmatop500.seruatscore"))
@@ -897,394 +932,47 @@ save(df,file=paste0(i,"_gsva_df.RData"))
 
 ```
 
-#### Compare with methods and AUC
+### 2.Scdrs top 1000genes score for magma and scPagwas
 
 ```R
-i<-"monocytecount"
-library('ComplexHeatmap')
-library(circlize)
-library(dplyr)
-require(pROC)
-require(ggplot2)
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData"))
-load("Vision_comparedf.RData")
-load("auccell_comparedf.RData")
-celltypes= c("12_CD14.Mono.2","13_CD16.Mono","24_CD8.CM","25_NK")
-
-meta.data1<-Single_data@meta.data
-
-df<-meta.data[meta.data$celltypes %in% celltypes,]
-df1<-meta.data1[meta.data1$celltypes %in% celltypes,c("scPagwastop1000.seruatscore1","magmatop1000.seruatscore2","scPagwastop500.seruatscore3","magmatop500.seruatscore4")]
-
-df1<-df1[rownames(df),]
-auccell_df<-auccell_df[meta.data$celltypes %in% celltypes,]
-Visiondf<-Visiondf[meta.data$celltypes %in% celltypes,]
-df$celltype<-rep("Correct",nrow(df))
-df$celltype[df$celltypes %in% c("24_CD8.CM","25_NK")]<-"non"
-df<-cbind(df,df1)
-#colors_celltypes=c("#125B50","#E04D01","#F8B400","#FAF5E4","#00AFC1"))
-
-score_df1<-data.frame(scPagwas.scDRS=df$scPagwas1000_scdrs.raw_score,
-                scPagwas.Vision=Visiondf$scPagwastop1000,
-                scPagwas.auccell=auccell_df$scPagwastop1000,
-                scPagwas.seruat=df$scPagwastop1000.seruatscore1,
-                magma.scDRS=df$magma1000_scdrs.raw_score,
-                magma.auccell=auccell_df$magmatop1000,
-                magma.Vision=Visiondf$magmatop1000,
-                   magma.seruat=df$magmatop1000.seruatscore2,  
-                    index=df$celltype)
-auc_list1<-lapply(score_df1[,1:8],function(x){
-  roc(predictor=x,response=score_df1$index)  
-})
-
-names(auc_list1)<-colnames(score_df1)[1:8]
- auc_l1<- unlist(lapply(1:length(auc_list1),function(x) round(as.numeric(auc_list1[[x]]["auc"]),3)))
- 
- names(auc_list1)<- paste0(names(auc_list1),"(AUC=",auc_l1,")")
- 
- pdf("AUC_pagwastop1000_comparescpre.pdf",height = 6)
- ggroc(auc_list1, linetype = 2, size = 1,alpha=0.8)+
-    ggtitle("ROC curve for top 1000 genes for monocytecount traits") + 
-    theme_classic()+ggsci::scale_color_lancet()+
-    geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), 
-                 color="grey", linetype="dashed")
-    #theme(panel.background=element_rect(fill="white",colour="blue"))
-  dev.off()
-
-                        
-score_df2<-data.frame(scPagwas.scDRS=df$scPagwas500_scdrs.raw_score,
-                scPagwas.Vision=Visiondf$scPagwastop500,
-                scPagwas.auccell=auccell_df$scPagwastop500,
-                scPagwas.seruat=df$scPagwastop500.seruatscore3,
-                magma.scDRS=df$magma500_scdrs.raw_score,
-                magma.auccell=auccell_df$magmatop500,
-                magma.Vision=Visiondf$magmatop500,
-                   magma.seruat=df$magmatop500.seruatscore4,  
-                    index=df$celltype)
-auc_list2<-lapply(score_df2[,1:8],function(x){
-  roc(predictor=x,response=score_df2$index)  
-})
-
-names(auc_list2)<-colnames(score_df2)[1:8]
- auc_l2<- unlist(lapply(1:length(auc_list2),function(x) round(as.numeric(auc_list2[[x]]["auc"]),3)))
- 
- names(auc_list2)<- paste0(names(auc_list2),"(AUC=",auc_l2,")")
- 
- pdf("AUC_pagwastop500_comparescpre.pdf",height = 6)
- ggroc(auc_list2, linetype = 2, size = 1,alpha=0.8)+
-    ggtitle("ROC curve for top 500 genes for monocytecount traits") + 
-    theme_classic()+ggsci::scale_color_lancet()+
-    geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), 
-                 color="grey", linetype="dashed")
-  dev.off()
-save(df,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/comparegroudtruth/monocytecounts_metadf.RData")
-```
-
-### 2.groudtruth
-
-```R
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/comparegroudtruth")
+#setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/comparegroudtruth")
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 
-traits<-c("eosinophilcount","basophilcount","LymphocytePercent","lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+#traits<-c("eosinophilcount","basophilcount","LymphocytePercent","lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+traits<-"Lymphocytecount3"
+load("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.10.0.RData")
 for(i in traits){
- load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData"))
+  #  i<-traits
+# load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData"))
+    
 pagwas1000_scDRS_re<-read.csv(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,".1000scPagwas.df_res.csv"))
 magma1000_scDRS_re<-read.csv(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,".1000magma.df_res.csv"))
  pagwas500_scDRS_re<-read.csv(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,".500scPagwasdf_res.csv"))
 magma500_scDRS_re<-read.csv(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,".500magma.df_res.csv"))
     
-meta.data$scPagwas1000_scdrs.raw_score<-pagwas1000_scDRS_re$raw_score
-meta.data$scPagwas1000_scdrs.zscore<-pagwas1000_scDRS_re$zscore
- meta.data$scPagwas1000_scdrs.pval<-pagwas1000_scDRS_re$pval
-meta.data$magma1000_scdrs.raw_score<-magma1000_scDRS_re$raw_score
-meta.data$magma1000_scdrs.zscore<-magma1000_scDRS_re$zscore
-meta.data$magma1000_scdrs.pval<-magma1000_scDRS_re$pval
+Pagwas$scPagwas1000_scdrs.raw_score<-pagwas1000_scDRS_re$raw_score
+Pagwas$scPagwas1000_scdrs.zscore<-pagwas1000_scDRS_re$zscore
+ Pagwas$scPagwas1000_scdrs.pval<-pagwas1000_scDRS_re$pval
+Pagwas$magma1000_scdrs.raw_score<-magma1000_scDRS_re$raw_score
+Pagwas$magma1000_scdrs.zscore<-magma1000_scDRS_re$zscore
+Pagwas$magma1000_scdrs.pval<-magma1000_scDRS_re$pval
 
-meta.data$scPagwas500_scdrs.raw_score<-pagwas500_scDRS_re$raw_score
-meta.data$scPagwas500_scdrs.zscore<-pagwas500_scDRS_re$zscore
- meta.data$scPagwas500_scdrs.pval<-pagwas500_scDRS_re$pval
-meta.data$magma500_scdrs.raw_score<-magma500_scDRS_re$raw_score
-meta.data$magma500_scdrs.zscore<-magma500_scDRS_re$zscore
-meta.data$magma500_scdrs.pval<-magma500_scDRS_re$pval
+Pagwas$scPagwas500_scdrs.raw_score<-pagwas500_scDRS_re$raw_score
+Pagwas$scPagwas500_scdrs.zscore<-pagwas500_scDRS_re$zscore
+ Pagwas$scPagwas500_scdrs.pval<-pagwas500_scDRS_re$pval
+Pagwas$magma500_scdrs.raw_score<-magma500_scDRS_re$raw_score
+Pagwas$magma500_scdrs.zscore<-magma500_scDRS_re$zscore
+Pagwas$magma500_scdrs.pval<-magma500_scDRS_re$pval
     
-meta.data$celltypes<-Single_data$BioClassification
-save(meta.data,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",i,"_meta.data.RData"))  
+#Pagwas$celltypes<-Single_data$BioClassification
+save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.10.0.RData")  
 }
 
 ```
 
-#### Compare with different methods
+### 3.Gene ranked plot
 
-#### Ranked proportion：
-
-```R
-i<-"monocytecount"
-library(ggpubr)
-library(ggplot2)
-load(paste0("E:/OneDrive/GWAS_Multiomics/Compare/5.16compareresult/",i,"_meta.data.RData"))
-###########################
-filecell="monocytecount"
-celltypes= c("12_CD14.Mono.2","13_CD16.Mono","24_CD8.CM","25_NK")
-colors_celltypes=c("#F38BA0","#FFBCBC","#EDF6E5","#B5EAEA")
-df<-meta.data[meta.data$celltypes %in% celltypes,]
-#df<-df[order(df$celltypes),]
-
-###########################
-filecell="MeanCorpusVolume"
-celltypes=c("01_HSC","03_Late.Eryth","02_Early.Eryth","24_CD8.CM","22_CD4.M")
-#colors_celltypes=c("#F38BA0","#FFBCBC","#EDF6E5","#B5EAEA")
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/",filecell,"_meta.data.RData"))
-df<-meta.data[meta.data$celltypes %in% celltypes,]
-
-df1<-df[,c("scPagwas1000_scdrs.raw_score",
-           "magma1000_scdrs.raw_score",
-           "scPagwas500_scdrs.raw_score",
-           "magma500_scdrs.raw_score","celltypes")]
-  
-df1<-df1[order(df1$scPagwas1000_scdrs.raw_score,decreasing=T),]
-#a<-scPagwas_magma_genelist[[i]]
-n<-nrow(df1)
-b<-rep(1,n)
-b[1:(0.25*n)]<-1
-b[(0.25*n+1):(0.5*n)]<-2
-b[(0.5*n+1):(0.75*n)]<-3
-b[(0.75*n+1):n]<-4
-df1$rg<-b
-df1$celltype<-rep("Correct",nrow(df1))
-df1$celltype[df1$celltypes %in% c("24_CD8.CM","22_CD4.M")]<-"non"
-
-print(table(data.frame(df1$celltype,df1$rg)))
-t1<-table(data.frame(df1$celltype,df1$rg))
-percent1<-t1[,1]/sum(t1[,1])
-#   Correct         non 
-#0.998688811 0.001311189
-
-df <- data.frame(
-  group = names(percent1),
-  value = percent1)
-
-p1<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4") )
-
-percent2<-t1[,2]/sum(t1[,2])
-
-df <- data.frame(
-  group = names(percent2),
-  value = percent2)
-
-p2<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-percent3<-t1[,3]/sum(t1[,3])
-
-df <- data.frame(
-  group = names(percent3),
-  value = percent3)
-
-p3<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-percent4<-t1[,4]/sum(t1[,4])
-
-df <- data.frame(
-  group = names(percent4),
-  value = percent4)
-
-p4<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-setwd("E:/OneDrive/GWAS_Multiomics/Compare/5.16compareresult")
-
-#####################500
-df1<-df1[order(df1$scPagwas500_scdrs.raw_score,decreasing=T),]
-#a<-scPagwas_magma_genelist[[i]]
-n<-nrow(df1)
-b<-rep(1,n)
-b[1:(0.25*n)]<-1
-b[(0.25*n+1):(0.5*n)]<-2
-b[(0.5*n+1):(0.75*n)]<-3
-b[(0.75*n+1):n]<-4
-df1$rg<-b
-df1$celltype<-rep("Correct",nrow(df1))
-df1$celltype[df1$celltypes %in% c("24_CD8.CM","22_CD4.M")]<-"non"
-
-print(table(data.frame(df1$celltype,df1$rg)))
-t1<-table(data.frame(df1$celltype,df1$rg))
-percent1<-t1[,1]/sum(t1[,1])
-
-df <- data.frame(
-  group = names(percent1),
-  value = percent1)
-
-p1.1<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4") )
-
-percent2<-t1[,2]/sum(t1[,2])
-
-df <- data.frame(
-  group = names(percent2),
-  value = percent2)
-
-p1.2<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-percent3<-t1[,3]/sum(t1[,3])
-
-df <- data.frame(
-  group = names(percent3),
-  value = percent3)
-
-p1.3<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-percent4<-t1[,4]/sum(t1[,4])
-
-df <- data.frame(
-  group = names(percent4),
-  value = percent4)
-
-p1.4<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#DF7861", "#D4E2D4"))
-
-#####################magma
-
-df1<-df1[order(df1$magma1000_scdrs.raw_score,decreasing=T),]
-#a<-scPagwas_magma_genelist[[i]]
-n<-nrow(df1)
-b<-rep(1,n)
-b[1:(0.25*n)]<-1
-b[(0.25*n+1):(0.5*n)]<-2
-b[(0.5*n+1):(0.75*n)]<-3
-b[(0.75*n+1):n]<-4
-df1$rg<-b
-df1$celltype<-rep("Correct",nrow(df1))
-df1$celltype[df1$celltypes %in% c("24_CD8.CM","22_CD4.M")]<-"non"
-
-print(table(data.frame(df1$celltype,df1$rg)))
-t1<-table(data.frame(df1$celltype,df1$rg))
-percent1<-t1[,1]/sum(t1[,1])
-#Correct        non 
-#0.91258741 0.08741259
-df <- data.frame(
-  group = names(percent1),
-  value = percent1)
-
-p2.1<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4") )
-
-percent2<-t1[,2]/sum(t1[,2])
-#Correct       non 
-#0.3041575 0.6958425
-df <- data.frame(
-  group = names(percent2),
-  value = percent2)
-
-p2.2<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-
-percent3<-t1[,3]/sum(t1[,3])
-#Correct       non 
-#0.1540481 0.8459519
-
-df <- data.frame(
-  group = names(percent3),
-  value = percent3)
-
-p2.3<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-
-percent4<-t1[,4]/sum(t1[,4])
-
-df <- data.frame(
-  group = names(percent4),
-  value = percent4)
-
-p2.4<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-
-
-######################500
-
-df1<-df1[order(df1$magma500_scdrs.raw_score,decreasing=T),]
-#a<-scPagwas_magma_genelist[[i]]
-n<-nrow(df1)
-b<-rep(1,n)
-b[1:(0.25*n)]<-1
-b[(0.25*n+1):(0.5*n)]<-2
-b[(0.5*n+1):(0.75*n)]<-3
-b[(0.75*n+1):n]<-4
-df1$rg<-b
-df1$celltype<-rep("Correct",nrow(df1))
-df1$celltype[df1$celltypes %in% c("24_CD8.CM","22_CD4.M")]<-"non"
-
-print(table(data.frame(df1$celltype,df1$rg)))
-t1<-table(data.frame(df1$celltype,df1$rg))
-percent1<-t1[,1]/sum(t1[,1])
-
-df <- data.frame(
-  group = names(percent1),
-  value = percent1)
-
-p3.1<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4") )
-
-percent2<-t1[,2]/sum(t1[,2])
-
-df <- data.frame(
-  group = names(percent2),
-  value = percent2)
-
-p3.2<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-
-percent3<-t1[,3]/sum(t1[,3])
-
-df <- data.frame(
-  group = names(percent3),
-  value = percent3)
-
-p3.3<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-
-percent4<-t1[,4]/sum(t1[,4])
-
-df <- data.frame(
-  group = names(percent4),
-  value = percent4)
-
-p3.4<-ggdonutchart(df, "value", label = "group",
-                   fill = "group", color = "white",
-                   palette = c("#DF7861", "#D4E2D4"))
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/comparegroudtruth")
-pdf(paste0(filecell,"percent.1000_scdrs.pdf"),width = 10,height = 10)
-ggpubr::ggarrange(p1,p2,p3,p4,p2.1,p2.2,p2.3,p2.4,nrow = 2,ncol = 4)
-dev.off()
-
-pdf(paste0(filecell,"percent.500_scdrs.pdf"),width = 10,height = 10)
-ggpubr::ggarrange(p1.1,p1.2,p1.3,p1.4,p3.1,p3.2,p3.3,p3.4,nrow = 2,ncol = 4)
-dev.off()
-```
-
-
-
-### 3.groudtruth : gene ranked plot
+Figure2BC
 
 #### top gene enrichment analysis
 
@@ -1326,18 +1014,18 @@ lapply(traits,function(i){
   }
   
   go_df <- data.frame(magma=c(a1,a3,a5,a7),scPagwas=c(a2,a4,a6,a8),FDR=c("1e-02","1e-03","1e-04","1e-05"))
-  ##画图，棒棒图
+  ##plot
   gg_go_df<-melt(go_df,id.vars = "FDR")
   gg_go_df$FDR<-factor(gg_go_df$FDR,levels = c("1e-05","1e-04","1e-03","1e-02"))
   
   setwd("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/")
   pdf(paste0("dorplot_",i,"_goranalysis_allgenes.pdf"),height =3,width=5)
   print(ggdotchart(gg_go_df, x="FDR", y="value", color = "variable",          
-             palette = c("#1F4690","#FFA500"), # 配色
-             sorting = "none",    # 排序  
+             palette = c("#1F4690","#FFA500"), #
+             sorting = "none",    # 
              size =1,dot.size=5,
              rotate = T,label="value",
-             add = "segments", #添加棒棒
+             add = "segments", #
              main=i, ylab="Numbers of significant GO terms",
              ggtheme = theme_pubr()) )
   
@@ -1508,7 +1196,9 @@ dev.off()
 
 ```
 
-### BMMC mean score for celltypes.plot
+### 4.Pheatmap: BMMC mean score for celltypes
+
+Figure4B
 
 ```R
 library(scPagwas)

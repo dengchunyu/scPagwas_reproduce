@@ -2,6 +2,8 @@
 
 ## visualization for BMMC
 
+Figure 4A
+
 ### 1.load the result and plot
 
 ```R
@@ -35,19 +37,19 @@ dev.off()
 
 ### 2.tsne plot for different traits
 
+Figure4CDE
+
 ```R
 
-for(i in c("Lymphocytecount3","monocytecount","MeanCorpusVolume","Hemoglobinconcen")){
- load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scPagwas1.8/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
+for(i in c("Lymphocytecount3","monocytecount","MeanCorpusVolume")){
+ load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
 
     all_fortify_can <- fortify.Seurat.tsne(Pagwas)
         p2<- ggplot() +
         geom_point(data = all_fortify_can,
-                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.TRS.Score1), size = 0.2, alpha = 1) +
+                   aes(x = TSNE_1, y = TSNE_2,color =scPagwas.topgenes.Score1), size = 0.2, alpha = 1) +
         umap_theme() +
-        scale_colour_gradient2(low="#8479E1",mid="#F7F5F2",high="#FD5D5D",
-                             midpoint = median(all_fortify_can$scPagwas.lmtopgenes.Score1)
-                              )+
+ scale_colour_gradient(low="#F7F5F2",high="#FD5D5D")+
         theme(aspect.ratio=1) +
         theme(legend.text=element_markdown(size=14),
               legend.title=element_text(size=14)) +
@@ -62,6 +64,8 @@ for(i in c("Lymphocytecount3","monocytecount","MeanCorpusVolume","Hemoglobinconc
 ```
 
 ### 3.Barplot and dotplot for scPagwas TRS score
+
+Figure4CDE
 
 ```R
 
@@ -171,6 +175,8 @@ for(i in traits2){
 
 ### 1. PBMC Lymphocytecount
 
+**Supplementary Figure S7**
+
 ```R
 library(scPagwas)
  suppressMessages(library(Seurat))
@@ -234,7 +240,7 @@ all_fortify_can <- fortify.Seurat.umap(Pagwas)
 
 ### 3.MeanCorpusVolume
 
-```
+```R
 library(scPagwas)
  suppressMessages(library(Seurat))
  library(ggplot2)
@@ -263,11 +269,9 @@ print(p1)
 dev.off()
 ```
 
-Monocyte
+4. ### Monocyte
 
-```
-
-
+```R
 library(scPagwas)
  suppressMessages(library(Seurat))
  library(ggplot2)
@@ -297,139 +301,9 @@ dev.off()
 
 ```
 
-## Integrate Pheatmap
-
-change the version of result ,v1.7 to b1.9
-
-```R
-library(Seurat)
-library(dplyr)
-library(patchwork)
-library(ggplot2)
-library(cowplot)
-library(stringr)
-library(ggtext)
-#setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/IntegrateVisulize")
- library(scPagwas)
- suppressMessages(library(Seurat))
-library(org.Hs.eg.db)
-library(dplyr)
-traits<-c("RBCcount","Plateletcount","basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-
-Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
-lapply(traits[c(1,3,4,6:12)],function(i){
-   load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.7.RData"))   
-Pagwas<-rerun_Pagwas(Single_data=Single_data,Pagwas=Pagwas,assay="RNA",n_topgenes=1000) 
-  save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
-})
-```
-
-### Construct a score matrix
-
-```R
-
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))  
-
-score_df<-lapply(traits,function(i){    load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))   
-return(Pagwas$scPagwas.topgenes.Score1)
-})
-
-score_df<-as.data.frame(score_df)
-colnames(score_df)<-traits
-score_df$celltypes<-Pagwas$celltypes
-save(score_df,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/BMMC_scPagwas_topgene_score_df.RData")
-
-load("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/BMMC_scPagwas_score_df.RData")
-
-mean_scoredf<-tapply(1:nrow(score_df),factor(score_df$celltypes),function(x){
-    return(colMeans(score_df[x,1:12]))
-})
-ct<-names(mean_scoredf)
-mean_scoredf <- Reduce(function(dtf1, dtf2) rbind(dtf1, dtf2),mean_scoredf)
-rownames(mean_scoredf)<-ct
-save(mean_scoredf,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/mean_scoredf.RData")
-
-load("E:/OneDrive/GWAS_Multiomics/Compare/Hema_test2/mean_scoredf.RData")
-library('ComplexHeatmap')
-library(circlize)
-
-mean_scoredf2<-scale(mean_scoredf)
-col_fun = colorRamp2(c(-0.1002435,0.6713905), c("#F8ECD1", "#85586F"))
-col_fun(seq(-0.1002435,0.6713905))
-#magma_pbmc_p
-
-a<-c("10_cDC","09_pDC","26_Unk","16_Pre.B","18_Plasma",
-     "17_B","14_Unk","13_CD16.Mono","12_CD14.Mono.2","11_CD14.Mono.1",
-     "25_NK","24_CD8.CM","22_CD4.M",
-     "23_CD8.EM","19_CD8.N","20_CD4.N1","21_CD4.N2",
-     "06_CLP.1","15_CLP.2","05_CMP.LMPP","07_GMP",
-     "01_HSC","04_Early.Baso","02_Early.Eryth",
-     "03_Late.Eryth","08_GMP.Neut")
-
-b<-c("Lymphocytecount3","LymphocytePercent","Hemoglobinconcen",
-     "MeanCorpuscularHemoglobin","MeanCorpusVolume",
-     "WhiteBloodCellcount","neutrophilcount","eosinophilcount",
-     "basophilcount","monocytecount")
-mean_scoredf2<-mean_scoredf2[t(a),t(b)]
-colnames(mean_scoredf2)[1]<-"Lymphocytecount"
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Hema_test2/Figure_pagwas_bmmc_score_heatmap.pdf",height =7,width =6)
-Heatmap(as.matrix(mean_scoredf2),
-        col = col_fun,
-        #left_annotation = ha, 
-        cluster_columns = F,
-        cluster_rows = F,
-        color_space="HLS",
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        name = "mean score",
-        #row_order =order(rdf$types),
-        show_row_names=T,
-        show_column_names=T
-        #row_split=rdf$phenotypes
-)
-dev.off()
-```
-
-
-
 ## sub-function
 
 ```R
-
-rerun_Pagwas<-function(Single_data=Single_data,Pagwas,assay="RNA",n_topgenes=1000){
-     class(Pagwas)<-"list"  
-    scPagwas_topgenes <- names(Pagwas$gene_heritability_correlation[order(Pagwas$gene_heritability_correlation, decreasing = T), ])[1:n_topgenes]
-    Single_data <- Seurat::AddModuleScore(Single_data, assay = assay, list(scPagwas_topgenes), name = c("scPagwas.topgenes.Score"))
-      Pagwas[c(
-      "VariableFeatures", "merge_scexpr","snp_gene_df",
-      "rawPathway_list","data_mat"
-    )] <- NULL
-
-    message("* Get rankPvalue for each single cell")
-    CellScalepValue <- rankPvalue(datS = t(data.matrix(GetAssayData(Single_data, assay = assay)[scPagwas_topgenes, ])), pValueMethod = "scale")
-     Pagwas[c("snp_gene_df",
-               "Pathway_sclm_results","CellScalepValue",
-               "scPagwas.topgenes.Score"
-               )] <- NULL
-      #Pagwas[c()] <- NULL
-      scPagwas_pathway <- SeuratObject::CreateAssayObject(data = t(data.matrix(Pagwas$Pathway_single_results)))
-      scPagwas_pca <- SeuratObject::CreateAssayObject(data = Pagwas$pca_scCell_mat)
-
-      Single_data[["scPagwasPaHeritability"]] <- scPagwas_pathway
-      Single_data[["scPagwasPaPca"]] <- scPagwas_pca
-
-      Single_data$scPagwas.lm.score <- Pagwas$scPagwas_score[rownames(Pagwas$Celltype_anno)]
-      Single_data$CellScalepValue <- CellScalepValue[rownames(Pagwas$Celltype_anno), "pValueHighScale"]
-      Single_data$CellScaleqValue <- CellScalepValue[rownames(Pagwas$Celltype_anno), "qValueHighScale"]
-      Pagwas[ c("scPagwas.score","Celltype_anno",
-                "Pathway_single_results","pca_scCell_mat")] <- NULL
-   
-      Single_data@misc<-Pagwas
-    return(Single_data)
-}
-
-
 umap_theme <- function() {
   theme_grey() %+replace%
     theme(
@@ -481,141 +355,5 @@ color_scanpy_13 <- c("#FDD2BF","#DF5E5E","#492F10","#753422","#628395","#262A53"
 
 color_scanpy_type3 <-c("#D9DD6B","#D54C4C","#548CA8")
 color_scanpy_8 <- c("#FDD2BF","#753422","#297F87","#DF5E5E","#628395","#262A53","#ECD662","#5D8233")
-
-scPagwas_score_filter <- function(scPagwas_score) {
-  # scPagwas_score <- scPagwas_score$scPagwas_score
-  # remove the NAN!
-  if (sum(is.nan(scPagwas_score)) > 0) {
-    scPagwas_score[is.nan(scPagwas_score)] <- 0
-  }
-  # remove the inf values!
-  if (Inf %in% scPagwas_score) {
-    scPagwas_score[which(scPagwas_score == Inf)] <- max(scPagwas_score[-which(scPagwas_score == Inf)], na.rm = TRUE)
-  }
-  if (-Inf %in% scPagwas_score) {
-    scPagwas_score[which(scPagwas_score == -Inf)] <- min(scPagwas_score[-which(scPagwas_score == -Inf)], na.rm = TRUE)
-  }
-  lower_bound <- quantile(scPagwas_score, 0.05, na.rm = TRUE)
-  upper_bound <- quantile(scPagwas_score, 0.95, na.rm = TRUE)
-
-  lower_ind <- which(scPagwas_score < lower_bound)
-  upper_ind <- which(scPagwas_score > upper_bound)
-  scPagwas_score[lower_ind] <- lower_bound
-  scPagwas_score[upper_ind] <- upper_bound
-
-  return(scPagwas_score)
-}
-
-#################另一种方式计算score
-
-sclm_anotherscore<-function(Pagwas=Pagwas){
- a<-matrix(Pagwas@misc$sclm_results,ncol = 1)
-Pagwas$sclm_score2<-rowSums(apply(GetAssayData(Pagwas,assay = "scPagwasPaPca"),1,function(x){
-   x*a
-  }),na.rm = T)
-  data_mat<-GetAssayData(Pagwas,assay = "RNA")  
-    sparse_lmcor <- corSparse(
-      X = t(as_matrix(data_mat)),
-      Y = data.matrix(Pagwas$sclm_score2)
-    )
-  rownames(sparse_lmcor) <- rownames(data_mat)
-  colnames(sparse_lmcor) <- "allsnp_gene_heritability_correlation"
-  sparse_lmcor[is.nan(sparse_lmcor)] <- 0
-  #allsnp_gene_heritability_correlation <- sparse_lmcor
-  
-scPagwaslm_topgenes <- names(sparse_lmcor[order(sparse_lmcor, decreasing = T), ])[1:1000]
-
-Pagwas <- Seurat::AddModuleScore(Pagwas, assay = "RNA", list(scPagwaslm_topgenes),
-                                      name = c("scPagwas.lm2topgenes.Score"))
-Pagwas$scPagwas.lm2topgenes.Score1 <- scPagwas_score_filter(scPagwas_score = Pagwas$scPagwas.lm2topgenes.Score1)
- return(Pagwas)
-}
-
-```
-
-```
-
-corSparse <- function(X, Y) {
-  # X <-as_matrix(X)
-  n <- nrow(X)
-  muX <- colMeans(X)
-
-  stopifnot(nrow(X) == nrow(Y))
-
-  muY <- colMeans(Y)
-  covmat <- (as.matrix(crossprod(X, Y)) - n * tcrossprod(muX, muY))
-  sdvecX <- sqrt((colSums(X^2) - n * muX^2))
-  sdvecY <- sqrt((colSums(Y^2) - n * muY^2))
-  cormat <- covmat / tcrossprod(sdvecX, sdvecY)
-  # cormat[is.nan(cormat),1]<-0
-  return(cormat)
-}
-
-
-#' the source code from RMTstat package
-#'
-WishartMaxPar <- (function() {
-  mu <- function( n,p ) {
-    n.sqrt <- sqrt( n )
-    p.sqrt <- sqrt( p )
-    res    <- ( n.sqrt + p.sqrt )^2
-    res
-  }
-
-  sigma <- function( n,p ) {
-    n.sqrt <- sqrt( n )
-    p.sqrt <- sqrt( p )
-    res    <- ( n.sqrt + p.sqrt )*( 1/n.sqrt + 1/p.sqrt )^( 1/3 )
-    res
-  }
-
-  mu.real <- function( n,p ) {
-    mu( n-1/2,p-1/2 )
-  }
-
-  sigma.real <- function( n,p ) {
-    sigma( n-1/2,p-1/2 )
-  }
-
-  alpha <- function( n,p ) {
-    1/( 1 + ( mu( n-1/2,p+1/2 )/mu( n+1/2,p-1/2 ) )
-        * sqrt( sigma( n-1/2,p+1/2 )/sigma( n+1/2,p-1/2 ) ) )
-  }
-
-  mu.cplx <- function( n,p ) {
-    a   <- alpha( n,p )
-    res <- mu( n-1/2,p+1/2 )*a + mu( n+1/2,p-1/2 )*( 1-a )
-    res
-  }
-
-  sigma.cplx <- function( n,p ) {
-    a   <- alpha( n,p )
-    res <- sigma( n-1/2,p+1/2 )*a + sigma( n+1/2,p-1/2 )*( 1-a )
-    res
-  }
-
-  function( ndf, pdim, var=1, beta=1 ) {
-    n <- ndf
-    p <- pdim
-
-    if( beta == 1 ) {
-      m <- mu.real( n,p )
-      s <- sigma.real( n,p )
-    } else if( beta == 2 ) {
-      m <- mu.cplx( n,p )
-      s <- sigma.cplx( n,p )
-    } else {
-      stop( "`beta' must be 1 or 2, not `", beta, "'")
-    }
-
-    center <- var*( m/n )
-    scale  <- var*( s/n )
-
-    list( centering=center, scaling=scale )
-  }
-})()
-
-
-
 ```
 

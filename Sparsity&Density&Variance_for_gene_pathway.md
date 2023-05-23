@@ -2,7 +2,11 @@
 
 # scPagwas data density and sparsity
 
+
+
 ## Density for Pathway PCA and single cell 
+
+**Supplementary Figure S1**
 
 ```R
 
@@ -37,6 +41,8 @@ dev.off()
 ```
 
 ## Variance for pathway and gene
+
+**Supplementary Figure S2**
 
 ```R
 library("ggplot2")
