@@ -696,53 +696,84 @@ source activate ldsc
 library(tidyverse)
 library("Seurat")
 
-#adata1<-readRDS("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/sim_data_8.16.rds")
-#adata2<-readRDS("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth/Pagwas_realgroundtruth.rds")
-
-adata1<-readRDS("/share/pub/dengcy/GWAS_Multiomics/ad_test/GSE160936.rds")
-#adata2<-readRDS("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth/Pagwas_realgroundtruth.rds")
-
-#计算每个细胞类型的平均表达
-average_expression <- AverageExpression(adata1, group.by = "annotation")
-average_expression<-average_expression$RNA
-ave_func(average_expression,path="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD/")
-#covid19
-##moderate
-load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_moderate.v1.10.RData")
-average_expression<-AverageExpression(Pagwas, group.by = "annotation")
-average_expression<-average_expression$RNA
-#创建文件夹
-dir.create("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/")
-dir.create("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/moderate/")
-ave_func(average_expression,path="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/moderate/")
-##Normal
-load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_Normal.v1.10.RData")
-average_expression<-AverageExpression(Pagwas, group.by = "annotation")
-average_expression<-average_expression$RNA
-dir.create("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/Normal/")
-ave_func(average_expression,path="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/Normal/")
-##severe
-load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_severe.v1.91.RData")
-average_expression<-AverageExpression(Pagwas, group.by = "annotation")
-average_expression<-average_expression$RNA
-dir.create("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/severe/")
-ave_func(average_expression,path="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/severe/")
-##mild
-load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_mild.v1.10.RData")
-average_expression<-AverageExpression(Pagwas, group.by = "annotation")
-average_expression<-average_expression$RNA
-dir.create("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/mild/")
-ave_func(average_expression,path="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/mild/")
-
-
 ###########################################
-gene_coordinates <-
+library(tidyverse)
+library(data.table)
+library(dplyr)
+gene_coordinates0 <-
   read_tsv("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/NCBI37.3.gene.loc.extendedMHCexcluded",
            col_names = FALSE,col_types = 'cciicc') %>%
   mutate(start=ifelse(X3-50000<0,0,X3-50000),end=X4+50000) %>%
   select(X2,start,end,6,1) %>%
   rename(chr="X2", Gene="X6",EntrezGene="X1") %>%
   mutate(chr=paste0("chr",chr))
+
+
+#gene_coordinates1 = data.frame(fread("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/ABCpaper_NasserFulcoEngreitz2020_Blood_AvgHiC.txt.gz"))
+
+ df_pre = data.frame(fread("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/AllPredictions.AvgHiC.ABC0.015.minus150.withcolnames.ForABCPaper.txt.gz"))
+  df_pre = df_pre[which(df_pre$class == "intergenic" | df_pre$clas == "genic"), ]
+  tissuename ="BLD"
+  tissuenames2 = as.character(read.table("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/ABC.listbloodQC.txt", header=F)[,1])
+ tissue_ids = as.numeric(unlist(sapply(tissuenames2, function(x) return(grep(x, df_pre$CellType)))))
+ df = df_pre[tissue_ids, ]
+  df2 = cbind.data.frame(df$chr, df$start, df$end, df$TargetGene)
+  colnames(df2) = c("chr", "start", "end", "Gene")
+
+  write.table(final_bed, paste0(output_cell, "/", output_bed),
+              sep = "\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+
+Enhancer = read.table("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/Roadmap_Enhancers_Blood.txt",header=F)
+df3<-Enhancer[,1:4]
+colnames(df3)<-c("chr","start","end","Gene")
+df3 = rbind(df3,df2)
+gene_coordinates<-df3
+
+#将gene_coordinates0中的EntrezGene列加入到gene_coordinates中
+gene_coordinates<-merge(gene_coordinates,gene_coordinates0[,c("Gene","EntrezGene")],by="Gene",all.x=TRUE)
+#删除na
+gene_coordinates<-gene_coordinates[!is.na(gene_coordinates$EntrezGene),]
+save(gene_coordinates,file="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/ABC_gene_coordinates.RData")
+
+###########################################
+#计算每个基因的平均表达量，以及输出bed
+library(tidyverse)
+library(data.table)
+library(dplyr)
+library(Seurat)
+adata1<-readRDS("/share/pub/dengcy/GWAS_Multiomics/modelgroudtruth/sim_data_8.16.rds")
+Avg_exp_bed(scdata=adata1,celltype="celltype",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/modeldata/")
+adata2<-readRDS("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth/Pagwas_realgroundtruth.rds")
+Avg_exp_bed(scdata=adata2,celltype="celltypes",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/realdata/")
+
+adata1<-readRDS("/share/pub/dengcy/GWAS_Multiomics/ad_test/GSE160936.rds")
+Avg_exp_bed(scdata=adata1,celltype="annotation",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD/")
+
+#covid19
+##moderate
+load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_moderate.v1.10.RData")
+Avg_exp_bed(scdata=Pagwas,celltype="annotation",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/moderate/")
+##Normal
+load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_Normal.v1.10.RData")
+Avg_exp_bed(scdata=Pagwas,celltype="annotation",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/Normal/")
+##severe
+load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_severe.v1.91.RData")
+Avg_exp_bed(scdata=Pagwas,celltype="annotation",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/severe/")
+
+##mild
+load("/share/pub/dengcy/GWAS_Multiomics/covid19/scpagwas_mild.v1.10.RData")
+Avg_exp_bed(scdata=Pagwas,celltype="annotation",bedfile="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/mild/")
+
+
+Avg_exp_bed<-function(scdata,celltype,bedfile,gene_coordinates=gene_coordinates){
+average_expression<-AverageExpression(scdata, group.by = celltype)
+average_expression<-average_expression$RNA
+if(!file.exists(bedfile)){
+dir.create(bedfile)
+}
+ave_func(average_expression,path=bedfile)
+}
 
 
 ave_func<-function(average_expression,path){
@@ -834,6 +865,10 @@ rm tmp.bed
 #SBATCH --time=1000:00:00
 source activate ldsc
 #B NK DC monocytes Tcells
+
+##########shell脚本
+test=$1
+f=$2
 path_name="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/processed_data/"
 all_snps="1000G_EUR_Phase3_baseline/1000genomes_phase3_SNPs.bed2"
 all_annotations="1000G_EUR_Phase3_baseline/"
@@ -841,11 +876,14 @@ plink_file="1000G_EUR_Phase3_plink/"
 hapmap_snps="hm_snp.txt"
 weights="1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC."
 frq="1000G_Phase3_frq/1000G.EUR.QC."
+echo $test
+mkdir "/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/"$test"/results/"
+mkdir "/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/"$test"/results/"
+cd "/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/"$test
+cd "/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/"$test
 
-mkdir /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD/results/
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD/
-for f in *.bed
-do
+#for f in *.bed
+#do
 echo $f
 intersectBed -c -a $path_name$all_snps -b $f > $f".1000genomes.intersect"
 awk '{if($5!=0) print $4}' $f".1000genomes.intersect" > $f".1000genomes.intersect.snp"
@@ -865,38 +903,6 @@ do
 done
 cd ..
 rm $f".1000genomes.intersect.snp"
-done
-
-```
-
-```shell
-##covid
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/mild/
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/severe/
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/moderate/
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/Normal/
-for f in *.bed
-do
-echo $f
-intersectBed -c -a $path_name$all_snps -b $f > $f".1000genomes.intersect"
-awk '{if($5!=0) print $4}' $f".1000genomes.intersect" > $f".1000genomes.intersect.snp"
-mkdir $f"_tissue_dir"
-rm $f".1000genomes.intersect"
-cd $f"_tissue_dir"
-for j in $path_name$all_annotations/*.annot
-do
-echo $j
-file_name=`basename $j`
-perl $path_name/fast_match2_minimal.pl ../$f".1000genomes.intersect.snp" $f $j > $file_name
-done
-gzip *annot
-for i in {1..22}
-do
-/share/pub/dengcy/software/ldsc-master/ldsc.py --l2 --bfile $path_name$plink_file/1000G.EUR.QC.$i --ld-wind-cm 1 --print-snps $path_name$hapmap_snps --annot baseline.$i.annot.gz --out ./baseline.$i
-done
-cd ..
-rm $f".1000genomes.intersect.snp"
-done
 ```
 
 
@@ -920,7 +926,7 @@ weights="1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC."
 frq="1000G_Phase3_frq/1000G.EUR.QC."
 all_annotations="1000G_EUR_Phase3_baseline"
 
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/modeldata/results/
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/modeldata/
 
 for f in *_tissue_dir
 do
@@ -934,7 +940,7 @@ done
 mkdir log_get_pvalues
 
 
-cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/realdata/results/
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/realdata/
 
 for f in *_tissue_dir
 do
@@ -946,12 +952,76 @@ cd $f
 cd ..
 done
 mkdir log_get_pvalues
+
+sumstats="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD.sumstats.gz"
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD/
+
+for f in *_tissue_dir
+do
+echo $f
+gwas_name=`basename $sumstats | cut -d "." -f 1`
+echo $gwas_name
+cd $f
+/share/pub/dengcy/software/ldsc-master/ldsc.py --h2 $sumstats --ref-ld-chr $path_name$all_annotations/baseline.,baseline. --w-ld-chr $path_name$weights --overlap-annot --frqfile-chr $path_name$frq --print-coefficients --out ./${gwas_name}_${f}
+cd ..
+done
+
+sumstats="/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI.sumstats.gz"
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/moderate/
+
+for f in *_tissue_dir
+do
+echo $f
+gwas_name=`basename $sumstats | cut -d "." -f 1`
+echo $gwas_name
+cd $f
+/share/pub/dengcy/software/ldsc-master/ldsc.py --h2 $sumstats --ref-ld-chr $path_name$all_annotations/baseline.,baseline. --w-ld-chr $path_name$weights --overlap-annot --frqfile-chr $path_name$frq --print-coefficients --out ./${gwas_name}_${f}
+cd ..
+done
+
+
+
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/mild/
+
+for f in *_tissue_dir
+do
+echo $f
+gwas_name=`basename $sumstats | cut -d "." -f 1`
+echo $gwas_name
+cd $f
+/share/pub/dengcy/software/ldsc-master/ldsc.py --h2 $sumstats --ref-ld-chr $path_name$all_annotations/baseline.,baseline. --w-ld-chr $path_name$weights --overlap-annot --frqfile-chr $path_name$frq --print-coefficients --out ./${gwas_name}_${f}
+cd ..
+done
+
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/severe/
+for f in *_tissue_dir
+do
+echo $f
+gwas_name=`basename $sumstats | cut -d "." -f 1`
+echo $gwas_name
+cd $f
+/share/pub/dengcy/software/ldsc-master/ldsc.py --h2 $sumstats --ref-ld-chr $path_name$all_annotations/baseline.,baseline. --w-ld-chr $path_name$weights --overlap-annot --frqfile-chr $path_name$frq --print-coefficients --out ./${gwas_name}_${f}
+cd ..
+done
+
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/Normal/
+for f in *_tissue_dir
+do
+echo $f
+gwas_name=`basename $sumstats | cut -d "." -f 1`
+echo $gwas_name
+cd $f
+/share/pub/dengcy/software/ldsc-master/ldsc.py --h2 $sumstats --ref-ld-chr $path_name$all_annotations/baseline.,baseline. --w-ld-chr $path_name$weights --overlap-annot --frqfile-chr $path_name$frq --print-coefficients --out ./${gwas_name}_${f}
+cd ..
+done
+
 ```
 
+计算pvalue
 ```R
 library("tidyverse")
 library("stringr")
-setwd("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/modeldata/results/")
+setwd("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/modeldata/")
 files <- list.files(".",pattern=".tissue_dir.results",full.names = TRUE,recursive=T)
 #files <- files[grepl("age",files)]
 
@@ -965,7 +1035,18 @@ d <- data_frame(filename=files) %>% mutate(file_contents = map(filename,read_tsv
 write_tsv(d,path="modeldata_cell_types_pvalues.txt")
 
 
-setwd("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/realdata/results/")
+setwd("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/realdata")
+files <- list.files(".",pattern=".tissue_dir.results",full.names = TRUE,recursive=T)
+d <- data_frame(filename=files) %>% mutate(file_contents = map(filename,read_tsv)) %>%
+  mutate(makenames=gsub(".bed_tissue_dir.results","",basename(filename)),
+           makenames=gsub(".bed_continuous_tissue_dir.results","",basename(makenames))) %>% unnest()
+  d <- d %>%  filter(Category=="L2_1") %>% mutate(P=1-pnorm(`Coefficient_z-score`)) %>%
+  mutate(Trait=sub("_.*","",makenames),Cell_Type=gsub("^_","",str_extract(makenames, "_.*"))) %>%
+  select(Trait,Cell_Type,Enrichment,Enrichment_std_error,Enrichment_p,P) %>% arrange(Enrichment_p)
+write_tsv(d,path="realdata_cell_types_pvalues.txt")
+
+
+setwd("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/AD")
 files <- list.files(".",pattern=".tissue_dir.results",full.names = TRUE,recursive=T)
 #files <- files[grepl("age",files)]
 
@@ -975,8 +1056,58 @@ d <- data_frame(filename=files) %>% mutate(file_contents = map(filename,read_tsv
   d <- d %>%  filter(Category=="L2_1") %>% mutate(P=1-pnorm(`Coefficient_z-score`)) %>%
   mutate(Trait=sub("_.*","",makenames),Cell_Type=gsub("^_","",str_extract(makenames, "_.*"))) %>%
   select(Trait,Cell_Type,Enrichment,Enrichment_std_error,Enrichment_p,P) %>% arrange(Enrichment_p)
-    
-write_tsv(d,path="realdata_cell_types_pvalues.txt")
+write_tsv(d,path="AD_cell_types_pvalues.txt")
+
+for(i in c("mild","moderate","severe","Normal")){
+setwd(paste0("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/",i))
+files <- list.files(".",pattern=".tissue_dir.results",full.names = TRUE,recursive=T)
+d <- data_frame(filename=files) %>% mutate(file_contents = map(filename,read_tsv)) %>%
+  mutate(makenames=gsub(".bed_tissue_dir.results","",basename(filename)),
+           makenames=gsub(".bed_continuous_tissue_dir.results","",basename(makenames))) %>% unnest()
+  d <- d %>%  filter(Category=="L2_1") %>% mutate(P=1-pnorm(`Coefficient_z-score`)) %>%
+  mutate(Trait=sub("_.*","",makenames),Cell_Type=gsub("^_","",str_extract(makenames, "_.*"))) %>%
+  select(Trait,Cell_Type,Enrichment,Enrichment_std_error,Enrichment_p,P) %>% arrange(Enrichment_p)
+  path=paste0(i,"_cell_types_pvalues.txt")
+write_tsv(d,path=path)
+}
+```
+整理结果
+
+```shell
+cd /share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/
+#for i in Normal severe moderate mild
+#cd $i
+#ehco $i
+for f in *_tissue_dir
+do
+cd $f
+#删除monocytecount_prune为开头的文件
+rm -rf monocytecount_prune*
+cd ..
+done
+```
+
+
+
+
+```R
+for(i in c("mild","moderate","severe","Normal")){
+setwd(paste0("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/COVID19_HGI/",i))
+df<-read.table(paste0(i,"_cell_types_pvalues.txt"),header=T)
+#删除Cell_Type中的prune_前缀
+df$Cell_Type<-gsub("prune_","",df$Cell_Type)
+#输出
+write.table(df,paste0("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/sclinker_",i,"_pvalues.txt"),sep="\t",quote=F,row.names=F)
+}
+
+for(i in c("modeldata","realdata","AD")){
+setwd(paste0("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/",i))
+df<-read.table(paste0(i,"_cell_types_pvalues.txt"),header=T)
+#删除Cell_Type中的prune_前缀
+df$Cell_Type<-gsub("prune_","",df$Cell_Type)
+#输出
+write.table(df,paste0("/share/pub/dengcy/GWAS_Multiomics/Revise_2023.4.11/sclinker/sclinker_",i,"_pvalues.txt"),sep="\t",quote=F,row.names=F)
+}
 
 ```
 
@@ -1103,6 +1234,7 @@ calculate_POET_sw(genotype = X_ref, gene_pval = prunein_gene_pval.Demo,
                   gene.loc = scRNA.loc, # For scRNA-seq data, specify gene.loc = scRNA.loc, which is returned by function process_scRNA()
                   chr =chr, type = "POET", inter_dir = inter_dir)
 }
+load("real_data.Demo.RData")
 pruneinObject.Demo <- get_gene_chisq(gene_pval = prunein_gene_pval.Demo, 
                                      gene.loc = scRNA.loc, # For scRNA-seq data, specify gene.loc = scRNA.loc, which is returned by function process_scRNA() 
                                      type = "POET", inter_dir = inter_dir)

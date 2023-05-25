@@ -319,6 +319,18 @@ plots_sigp <- cowplot::plot_grid(plots_sigp1, plots_sigp2, ncol = 2)
 #保存图片
 ggsave("scPagwas_monocytecount_modeldata_v1.10.0_correct_pvalue.pdf", plots_sigp, width = 8, height = 4)
 
+#计算假阳性率
+df<-all_fortify_can[,c("CorrectBG_adj_p","CellScaleqValue","celltype")]
+
+df$CorrectBG_adj_p<-ifelse(df$CorrectBG_adj_p<=0.05,1,0)
+df$CellScaleqValue<-ifelse(df$CellScaleqValue<=0.05,1,0)
+df$celltype<-ifelse(df$celltype=="monocytes",1,0)
+#CorrectBG_adj_p的假阳性率
+sum(df$CorrectBG_adj_p==1&df$celltype==0)/sum(df$CorrectBG_adj_p==1)
+[1] 0.03732304
+#CellScaleqValue的假阳性率
+sum(df$CellScaleqValue==1&df$celltype==0)/sum(df$CellScaleqValue==1)
+[1] 0.07578558
 ```
 
 导入图3e的真实数据的结果
@@ -369,7 +381,22 @@ plots_sigp <- cowplot::plot_grid(plots_sigp1, plots_sigp2, ncol = 2)
 #保存图片
 ggsave("Pagwas_groundtruth_bmmc_monocyte_v10_correct_pvalue.pdf", plots_sigp, width = 8, height = 4)
 
+#计算假阳性率
+df<-all_fortify_can[,c("CorrectBG_adj_p","CellScaleqValue","celltypes")]
+
+df$CorrectBG_adj_p<-ifelse(df$CorrectBG_adj_p<=0.05,1,0)
+df$CellScaleqValue<-ifelse(df$CellScaleqValue<=0.05,1,0)
+df$celltypes<-ifelse(df$celltypes %in% c("12_CD14.Mono.2","11_CD14.Mono.1","13_CD16.Mono"),1,0)
+#CorrectBG_adj_p的假阳性率
+sum(df$CorrectBG_adj_p==1&df$celltypes==0)/sum(df$CorrectBG_adj_p==1)
+#CellScaleqValue的假阳性率
+
+sum(df$CellScaleqValue==1&df$celltypes==0)/sum(df$CellScaleqValue==1)
+[1] 0.01647655
+sum(df$CellScaleqValue==1&df$celltypes==0)/sum(df$CellScaleqValue==1)
+[1] 0.05832229
 ```
+
 #### 1.3.2 图3模拟数据和真实数据，细胞类型pvalue的结果
 
 ```R
@@ -594,6 +621,10 @@ Bootstrap_estimate_Plot(bootstrap_results=Pagwas$bootstrap_results,
                         height = 6,
                         do_plot=T)
 dev.off()
+#输出Pagwas$bootstrap_results结果
+df<-Pagwas$bootstrap_results[-1,]
+write.table(df,file="model_monocytecount_celltypeP.txt",sep="\t",quote=F,row.names = F)
+
 #真实数据
 load("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth/Pagwas_groundtruth_bmmc_monocyte_v10.RData")
 #删除celltypes为11_CD14.Mono.1的单细胞
@@ -612,12 +643,17 @@ Pagwas<-scPagwas_main(Pagwas = NULL,
                      celltype=T
 )
 save(Pagwas,file="Pagwas_monocytecount_realdata_celltype.RData")
+Pagwas$bootstrap_results$bp_value<-p.adjust(Pagwas$bootstrap_results$bp_value,method = "fdr")
 pdf("real_monocytecount_celltype.pdf")
 Bootstrap_estimate_Plot(bootstrap_results=Pagwas$bootstrap_results,
                         width = 9,
                         height = 7,
                         do_plot=T)
 dev.off()
+#输出Pagwas$bootstrap_results结果
+df<-Pagwas$bootstrap_results[-1,]
+write.table(df,file="real_monocytecount_celltypeP.txt",sep="\t",quote=F,row.names = F)
+
 ```
 
 #### 1.5.2 所有血细胞trait的细胞类型pvalue的计算
