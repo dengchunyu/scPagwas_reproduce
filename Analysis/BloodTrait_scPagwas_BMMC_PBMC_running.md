@@ -8,8 +8,6 @@ Blood cell traits.
 Summary statistics of 22 blood cell traits from Blood Cell Consortium 2 (BCX2) were processed 
 as previously described
 
-> (Vuckovic, D. et al. The Polygenic and Monogenic Basis of Blood Traits and Diseases. Cell 182, 1214–1231.e11 (2020)). 
-
 ### blood traits：
 Data and Code Availability Summary statistics are available to download from: ftp://ftp.sanger.ac.uk/pub/project/humgen/summary_statistics/UKBB_blood_cell_traits/ for UK Biobank and http://www.mhi-humangenetics.org/en/resources for the meta-analysis. The accession numbers for the UK Biobank summary statistics reported in this paper are: 
 
@@ -38,15 +36,13 @@ Data and Code Availability Summary statistics are available to download from: ft
 
 ## PBMC and BMMC scRNA-seq data
 
-
-
 ### 1.prepare the singlecell result
 
 #### PBMC single cell data
 
 ```R
 
-load("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/phe_NM_Healthy_pbmc.Rdata")
+load("./phe_NM_Healthy_pbmc.Rdata")
 NM_Healthy_pbmc
 An object of class Seurat 
 24737 features across 97039 samples within 1 assay 
@@ -97,7 +93,7 @@ table(NM_Healthy_pbmc$initial_clustering)
          115         2145          327         2340         3592          689 
 
 Idents(NM_Healthy_pbmc)<-NM_Healthy_pbmc$initial_clustering
-saveRDS(NM_Healthy_pbmc,file="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds")
+saveRDS(NM_Healthy_pbmc,file="./NM_Healthy_pbmc.rds")
 ```
 
 #### BMMC single cell data
@@ -118,16 +114,16 @@ Seu_Healthy_Hema <- CreateSeuratObject(
 Idents(Seu_Healthy_Hema)<-scRNA_Healthy_Hema@colData$BioClassification
 table(Idents(Seu_Healthy_Hema))
 
-        01_HSC 02_Early.Eryth  03_Late.Eryth  04_Early.Baso    05_CMP.LMPP       06_CLP.1 
-          1425           1653            446            111           2260            903 
-        07_GMP    08_GMP.Neut         09_pDC         10_cDC 11_CD14.Mono.1 12_CD14.Mono.2 
-          2097           1050            544            325           1800           4222 
-  13_CD16.Mono         14_Unk       15_CLP.2       16_Pre.B           17_B      18_Plasma 
-           292            520            377            710           1711             62 
-      19_CD8.N      20_CD4.N1      21_CD4.N2       22_CD4.M      23_CD8.EM      24_CD8.CM 
-          1521           2470           2364           3539            796           2080 
-         25_NK         26_Unk 
-          2143            161 
+#        01_HSC 02_Early.Eryth  03_Late.Eryth  04_Early.Baso    05_CMP.LMPP       06_CLP.1 
+#          1425           1653            446            111           2260            903 
+#        07_GMP    08_GMP.Neut         09_pDC         10_cDC 11_CD14.Mono.1 12_CD14.Mono.2 
+#          2097           1050            544            325           1800           4222 
+#  13_CD16.Mono         14_Unk       15_CLP.2       16_Pre.B           17_B      18_Plasma 
+#           292            520            377            710           1711             62 
+#      19_CD8.N      20_CD4.N1      21_CD4.N2       22_CD4.M      23_CD8.EM      24_CD8.CM 
+#          1521           2470           2364           3539            796           2080 
+#         25_NK         26_Unk 
+#          2143            161 
 
 Seu_Healthy_Hema <- ScaleData(Seu_Healthy_Hema)
 Seu_Healthy_Hema <- NormalizeData(Seu_Healthy_Hema, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -141,12 +137,12 @@ Seu_Healthy_Hema <- NormalizeData(Seu_Healthy_Hema, normalization.method = "LogN
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare")
  library(scPagwas)
  suppressMessages(library(Seurat))
-Single_data=readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds")
-    Pagwas <- Single_data_input(Pagwas=NULL,
+Single_data=readRDS("./NM_Healthy_pbmc.rds")
+Pagwas <- Single_data_input(Pagwas=NULL,
                                 assay="RNA",
                                 Single_data=Single_data,
                                 Pathway_list=Genes_by_pathway_kegg)
-  Pagwas <- Pathway_pcascore_run(Pagwas=Pagwas,
+Pagwas <- Pathway_pcascore_run(Pagwas=Pagwas,
                                  Pathway_list=Genes_by_pathway_kegg
                                  )
 save(Pagwas ,file="NM_Healthy_pbmc_prePagwas.RData")
@@ -154,11 +150,11 @@ save(Pagwas ,file="NM_Healthy_pbmc_prePagwas.RData")
 ##BMMC
 library(scPagwas)
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
-  Pagwas <- Single_data_input(Pagwas=NULL,
+Pagwas <- Single_data_input(Pagwas=NULL,
                                 assay="RNA",
                                 Single_data=Single_data,
                                 Pathway_list=Genes_by_pathway_kegg)
-  Pagwas <- Pathway_pcascore_run(Pagwas=Pagwas,
+Pagwas <- Pathway_pcascore_run(Pagwas=Pagwas,
                                  Pathway_list=Genes_by_pathway_kegg
                                  )
 save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Seu_Healthy_Hema_kegg_prePagwas.RData")
@@ -172,9 +168,9 @@ export OPENBLAS_NUM_THREADS=1
 
 ```R
 library(scPagwas)
- library(ggplot2)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
+library(ggplot2)
+suppressMessages(library(Seurat))
+suppressMessages(library("dplyr"))
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
 load("/share/pub/dengcy/GWAS_Multiomics/compare/Seu_Healthy_Hema_kegg_prePagwas.RData")
 
@@ -197,85 +193,48 @@ Pagwas<-scPagwas_main(Pagwas =Pagwas,
 
 ```R
 library(scPagwas)
- library(ggplot2)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-
+library(ggplot2)
 suppressMessages(library(Seurat))
-load("/share/pub/dengcy/GWAS_Multiomics/compare/NM_Healthy_pbmc_prePagwas.RData")
-#################
-#celltypes
-#################
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc/")
-for(i in traits){
-     Pagwas<-scPagwas_main(Pagwas =Pagwas,
-                     gwas_data =paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_gwas_data.txt"),
-                     Single_data ="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds",
-                     output.prefix=i,
-                           singlecell=F,
-                     Pathway_list=Genes_by_pathway_kegg,
-                     output.dirs=paste0(i,"_pbmc_scPagwasv1.9"),
-                     ncores=5,
-                     assay="RNA",
-                     block_annotation = block_annotation,
-                     chrom_ld = chrom_ld)
-  save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc/",i,"_pbmc_scPagwas.RData"))
-    }
-
-#################
-#single cell
-##################
-library(scPagwas)
- library(ggplot2)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
+suppressMessages(library("dplyr"))
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc")
-suppressMessages(library(Seurat))
 load("/share/pub/dengcy/GWAS_Multiomics/compare/NM_Healthy_pbmc_prePagwas.RData")
 
-traits2<-c("basophilcount",,"Lymphocytecount3","monocytecount","Hemoglobinconcen","MeanCorpusVolume")
+traits<-c("basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
 
-for(i in traits2){
+for(i in traits){
      Pagwas<-scPagwas_main(Pagwas =Pagwas,
                      gwas_data =paste0("/share/pub/dengcy/GWAS_Multiomics/compare/bloodtraits/",i,"_prune_gwas_data.txt"),
                      Single_data ="/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds",
                      output.prefix=i,
-                     celltype=F,
                      Pathway_list=Genes_by_pathway_kegg,
-                     output.dirs=paste0(i,"_pbmc_scPagwasv1.9"),
+                     output.dirs=paste0(i,"_pbmc_scPagwas"),
                      ncores=1,
                      assay="RNA",
-                     split_n=4,
                      block_annotation = block_annotation,
                      chrom_ld = chrom_ld)
   save(Pagwas,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/",i,"_pbmc_scPagwas_singlecell.RData"))
 }
 ```
 
-### 4.Integrate bmmc result
+### 4.Integrate bmmc and PBMC celltype result
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
 #"RBCcount","Plateletcount",
 traits<-c("basophilcount","eosinophilcount" ,"Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","LymphocytePercent","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-i<-traits[1]
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
-
 result_list<-lapply(traits,function(i){
    print(i)
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
+load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
     a<-Pagwas@misc$bootstrap_results[-1,]
     return(a$bp_value)
 })
 names(result_list)<-traits
 result_list<-as.data.frame(result_list)
-#load("RBCcount_Hema_bmmc_scPagwas_v1.7.RData")
 rownames(result_list)<-rownames(Pagwas@misc$bootstrap_results[-1,])
 save(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/scPagwas_bmmc_list.RData")
 write.csv(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/scPagwas_bmmc_list.csv")
 
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc")
-
 result_list<-lapply(traits,function(i){
    print(i)
     load(paste0(i,"_pbmc_scPagwas.RData"))
@@ -283,18 +242,16 @@ result_list<-lapply(traits,function(i){
         a<-a$bp_value
     return(a)
 })
-
 names(result_list)<-traits
 result_list<-as.data.frame(result_list)
 load("monocytecount_pbmc_scPagwas.RData")
 rownames(result_list)<-rownames(Pagwas$bootstrap_results[-1,])
-
 result_list<-result_list[,1:12]
 save(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc/scPagwas_PBMC_celltypes_resultlist.RData")
 write.csv(result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/Pbmc/scPagwas_pbmc_list.csv")
 ```
 
-## Blood traits run MAGMA
+## Blood traits run MAGMA for trait-relevant celltypes pvalue result
 
 ### 1.Preprogress
 
@@ -319,8 +276,7 @@ write.table(magma_Input1,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/
 
 ```sh
 cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in basophilcount  
-#basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
+for i in  basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
 do
 ./magma --annotate window=10,10 --snp-loc /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input2.txt \
 --gene-loc /share/pub/dengcy/Singlecell/COVID19/MAGMA/NCBI/NCBI37.3.gene.loc.extendedMHCexcluded \
@@ -334,25 +290,7 @@ done
 ```sh
 cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
 #basophilcount 
-for i in basophilcount 
-do
-./magma --bfile /share/pub/dengcy/Singlecell/COVID19/MAGMA/g1000_eur/g1000_eur \
---pval /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input1.txt ncol=3 \
---gene-annot /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10_down.genes.annot \
---out /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down
-done
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in neutrophilcount WhiteBloodCellcount LymphocytePercent
-do
-./magma --bfile /share/pub/dengcy/Singlecell/COVID19/MAGMA/g1000_eur/g1000_eur \
---pval /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input1.txt ncol=3 \
---gene-annot /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10_down.genes.annot \
---out /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down
-done
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
+for i in basophilcount basophilcount eosinophilcount lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume 
 do
 ./magma --bfile /share/pub/dengcy/Singlecell/COVID19/MAGMA/g1000_eur/g1000_eur \
 --pval /share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/magma_${i}Input1.txt ncol=3 \
@@ -447,25 +385,15 @@ top10_function(as.data.frame(cell_expr$pbmc))
 
 ### 5.MAGMA main function
 
-```R
+```shell
 #1.
 cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in basophilcount  
-#basophilcount eosinophilcount Lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
+for i in monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
 do
 int="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down.genes.raw"
 cell_type="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/pbmc_top10.txt"
 ./magma --gene-results  $int --set-annot  $cell_type --out /share/pub/dengcy/GWAS_Multiomics/compare/magma/${i}_magma_pbmc
 done
-
-cd /share/pub/dengcy/Singlecell/COVID19/MAGMA
-for i in lymphocytecount monocytecount neutrophilcount WhiteBloodCellcount LymphocytePercent Hemoglobinconcen MeanCorpuscularHemoglobin MeanCorpusVolume
-do
-int="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/${i}annotated_10kbup_10down.genes.raw"
-cell_type="/share/pub/dengcy/GWAS_Multiomics/compare/magma/predata/pbmc_top10.txt"
-./magma --gene-results  $int --set-annot  $cell_type --out /share/pub/dengcy/GWAS_Multiomics/compare/magma/${i}_magma_pbmc
-done
-
 ```
 
 ### 6.Integrate magma result
@@ -490,88 +418,7 @@ magma_result_list<-lapply(ds,function(i){
 })
 names(magma_result_list)<-ds
 save(magma_result_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/magma_pbmc_result_list.RData")
-
 ```
-
-## Visualize the result for different methods
-
-### 1.scPagwas
-
-```R
-library(gplots)
-library(RColorBrewer)
-
-setwd("E:/OneDrive/GWAS_Multiomics/Compare")
-load("scPagwas_bmmc_list.RData")
-result_list2<- -log2(result_list)
-#magma_pbmc_p
-
-coul <- colorRampPalette(brewer.pal(8, "Oranges"))(25)
-p2star <- function(p){
-  symnum(p,cutpoints = c(0,0.001,0.01,0.05,1),
-         symbols = c('***','**','*',''),na = NA)
-}
-hM <- apply(result_list,2, function(x) as.character(p2star(x)))
-rownames(hM)<-rownames(result_list2)
-
-result_list2<-as.matrix(result_list2)
-result_list2[which(result_list2>20)]<-20
-
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Figure_scPagwas_bmmc_cellytpe_p.pdf",
-    height =8,width =6)
-heatmap.2(result_list2,
-          trace="none",#
-          col=coul,#
-          density.info = "none",#
-          key.xlab ='Correlation',
-          key.title = "",
-          cexRow = 1,cexCol = 1,#
-          Rowv = F,Colv =T, #
-          margins = c(6, 6),
-          cellnote = hM,notecol='black'
-)
-dev.off()
-```
-
-### 2.magma
-
-```R
-##########################magma
-load("magma_bmmc_list.RData")
-result_list<-magma_bmmc_list[,3:12]
-result_list2<- -log2(result_list)
-#magma_pbmc_p
-
-coul <- colorRampPalette(brewer.pal(8, "Oranges"))(25)#
-#hM <- format(round(result_list2, 2))#
-p2star <- function(p){
-  symnum(p,cutpoints = c(0,0.001,0.01,0.05,1),
-         symbols = c('***','**','*',''),na = NA)
-}
-hM <- apply(result_list,2, function(x) as.character(p2star(x)))
-rownames(hM)<-rownames(result_list2)
-
-
-result_list2<-as.matrix(result_list2)
-result_list2[which(result_list2>20)]<-20
-
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Figure_magma_bmmc_cellytpe_p.pdf",
-    height =8,width =6)
-heatmap.2(result_list2,
-          trace="none",#
-          col=coul,#
-          density.info = "none",
-          key.xlab ='Correlation',
-          key.title = "",
-          cexRow = 1,cexCol = 1,
-          Rowv = F,Colv =T, #
-          margins = c(6, 6),
-          cellnote = hM,notecol='black'#
-)
-dev.off()
-```
-
-
 
 ### 3.rolypoly
 
@@ -607,38 +454,6 @@ rownames(rolypoly_bmmc_list)<-rownames(rolypoly_result$bootstrap_results[-1,])
 
 save(rolypoly_bmmc_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/rolypoly_BMMC_list.RData")
 write.csv(rolypoly_bmmc_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/rolypoly_BMMC_list.csv")
-#################rolypoly
-load("rolypoly_bmmc_list.RData")
-result_list<-rolypoly_bmmc_list[,3:12]
-result_list2<- -log2(result_list)
-#magma_pbmc_p
-
-coul <- colorRampPalette(brewer.pal(8, "Oranges"))(25)#
-#hM <- format(round(result_list2, 2))#
-p2star <- function(p){
-  symnum(p,cutpoints = c(0,0.001,0.01,0.05,1),
-         symbols = c('***','**','*',''),na = NA)
-}
-hM <- apply(result_list,2, function(x) as.character(p2star(x)))
-rownames(hM)<-rownames(result_list2)
-
-result_list2<-as.matrix(result_list2)
-result_list2[which(result_list2>20)]<-20
-
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Figure_rolypoly_bmmc_cellytpe_p.pdf",
-    height =8,width =6)
-heatmap.2(result_list2,
-          trace="none",#
-          col=coul,#
-          density.info = "none",#
-          key.xlab ='Correlation',
-          key.title = "",
-          cexRow = 1,cexCol = 1,#
-          Rowv = F,Colv =T, #
-          margins = c(6, 6),
-          cellnote = hM,notecol='black'#
-)
-dev.off()
 ```
 
 ### 4.ldsc
@@ -686,46 +501,8 @@ ldsc_bmmc_list<-as.data.frame(lapply(ldsc_bmmc_result,function(df){
 rownames(ldsc_bmmc_list)<-ldsc_bmmc_result[[1]]$Name
 write.csv(ldsc_bmmc_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/ldsc_bmmc_list.csv")
 save(ldsc_bmmc_list,file="/share/pub/dengcy/GWAS_Multiomics/compare/ldsc_bmmc_list.RData")
-
-#################rolypoly
-##########################magma
-load("ldsc_bmmc_list.RData")
-result_list<-ldsc_bmmc_list[,3:12]
-result_list2<- -log2(result_list)
-#magma_pbmc_p
-
-coul <- colorRampPalette(brewer.pal(8, "Oranges"))(25)#
-
-p2star <- function(p){
-  symnum(p,cutpoints = c(0,0.001,0.01,0.05,1),
-         symbols = c('***','**','*',''),na = NA)
-}
-hM <- apply(result_list,2, function(x) as.character(p2star(x)))
-rownames(hM)<-rownames(result_list2)
-
-
-result_list2<-as.matrix(result_list2)
-result_list2[which(result_list2>20)]<-20
-
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Figure_ldsc_bmmc_cellytpe_p.pdf",
-    height =8,width =6)
-heatmap.2(result_list2,
-          trace="none",#
-          col=coul,#
-          density.info = "none",#
-          key.xlab ='Correlation',
-          key.title = "",
-          cexRow = 1,cexCol = 1,
-          Rowv = F,Colv =T, #
-          margins = c(6, 6),
-          cellnote = hM,notecol='black'#
-)
-dev.off()
 ```
-
-
-
-## Ranked visualized
+## Ranked visualized data
 
 ### 1.Calculated the score
 
@@ -733,66 +510,65 @@ dev.off()
 
 ```R
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
- library(scPagwas)
- suppressMessages(library(Seurat))
+library(scPagwas)
+suppressMessages(library(Seurat))
 library(org.Hs.eg.db)
 library(dplyr)
 
- traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
 
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 g2s=toTable(org.Hs.egSYMBOL)
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS")
 for(i in traits){
-    print(i)
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
-    Celltype_anno<-Pagwas@misc$Celltype_anno
-magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/",i,"_10kbup_10down.genes.out"),header=T)
-#save(magma_genes,file=paste0(i,"_magma_genes.RData"))
-magma_genes$gene_id<-magma_genes$GENE
-magma_genes=merge(magma_genes,g2s,by="gene_id",all.x=T)
-magma_genes<-na.omit(magma_genes)
-magma_genes<-magma_genes[order(magma_genes$P,decreasing=F),]
-save(magma_genes,file=paste0(i,"_magma_genes.RData"))
-scPagwas_genes<-names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation,decreasing=T),])
-    magmatop1000<-magma_genes$symbol
-magmatop1000<-magmatop1000[1:1000]
-scPagwastop1000<-scPagwas_genes[1:1000]
-magmatop500<-magmatop1000[1:500]
-scPagwastop500<-scPagwas_genes[1:500]
-topgene<-list(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500)
-names(topgene)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
-save(topgene,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scPagwas.magmatopgenes_",i,".RData")) 
+  print(i)
+  load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
+  Celltype_anno<-Pagwas@misc$Celltype_anno
+  magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/",i,"_10kbup_10down.genes.out"),header=T)
+  #save(magma_genes,file=paste0(i,"_magma_genes.RData"))
+  magma_genes$gene_id<-magma_genes$GENE
+  magma_genes=merge(magma_genes,g2s,by="gene_id",all.x=T)
+  magma_genes<-na.omit(magma_genes)
+  magma_genes<-magma_genes[order(magma_genes$P,decreasing=F),]
+  save(magma_genes,file=paste0(i,"_magma_genes.RData"))
+  scPagwas_genes<-names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation,decreasing=T),])
+  magmatop1000<-magma_genes$symbol
+  magmatop1000<-magmatop1000[1:1000]
+  scPagwastop1000<-scPagwas_genes[1:1000]
+  magmatop500<-magmatop1000[1:500]
+  scPagwastop500<-scPagwas_genes[1:500]
+  topgene<-list(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500)
+  names(topgene)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
+  save(topgene,file=paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scPagwas.magmatopgenes_",i,".RData")) 
 
-magmatop1000<-paste(magmatop1000,collapse=",")
-scPagwastop1000<-paste(scPagwastop1000,collapse=",")
-magmatop500<-paste(magmatop500,collapse=",")
-scPagwastop500<-paste(scPagwastop500,collapse=",")
+  magmatop1000<-paste(magmatop1000,collapse=",")
+  scPagwastop1000<-paste(scPagwastop1000,collapse=",")
+  magmatop500<-paste(magmatop500,collapse=",")
+  scPagwastop500<-paste(scPagwastop500,collapse=",")
 
-a<-data.frame(genes=c(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500))
-rownames(a)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
-write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"))
+  a<-data.frame(genes=c(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500))
+  rownames(a)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
+  write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"))
 
-meta.data<-data.frame(scPagwas_score=Pagwas$scPagwas_score[colnames(Single_data)],
- CellsrankPvalue=Pagwas$CellsrankPvalue[colnames(Single_data),"pValueHigh"]
+  meta.data<-data.frame(scPagwas_score=Pagwas$scPagwas_score[colnames(Single_data)],
+  CellsrankPvalue=Pagwas$CellsrankPvalue[colnames(Single_data),"pValueHigh"]
                      )
-meta.data$positive<-rep("positive",ncol(Single_data))
-meta.data$positive[Single_data$CellsrankPvalue>0.05]<-"negative"
-save(meta.data,file=paste0(i,"_meta.data.RData"))
+  meta.data$positive<-rep("positive",ncol(Single_data))
+  meta.data$positive[Single_data$CellsrankPvalue>0.05]<-"negative"
+  save(meta.data,file=paste0(i,"_meta.data.RData"))
     
-    }
+  }
 
 ###############################
 for(i in traits){
     print(i)
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
-n<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
+    load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
+    n<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
 
-a<-data.frame(topgene[[1]],topgene[[2]])
-colnames(a)<-c("scPagwastop1000","magmatop1000")
-write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"),row.names = F)
+    a<-data.frame(topgene[[1]],topgene[[2]])
+    colnames(a)<-c("scPagwastop1000","magmatop1000")
+    write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"),row.names = F)
 }
-#############################
 
 #####load scRDS data
 library(SeuratDisk)
@@ -965,293 +741,7 @@ Pagwas$magma500_scdrs.zscore<-magma500_scDRS_re$zscore
 Pagwas$magma500_scdrs.pval<-magma500_scDRS_re$pval
     
 #Pagwas$celltypes<-Single_data$BioClassification
-save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas_v1.10.0.RData")  
+save(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/Lymphocytecount3_Hema_bmmc_scPagwas.RData")  
 }
 
 ```
-
-### 3.Gene ranked plot
-
-Figure2BC
-
-#### top gene enrichment analysis
-
-```R
-
-library(ggplot2)
-library(reshape2)
-library(ggpubr)
-traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3",
-             "monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen",
-             "MeanCorpuscularHemoglobin","MeanCorpusVolume")
-
-lapply(traits,function(i){
-  print(i)
-  if(i=="MeanCorpuscularHemoglobin"){
-    magma_goresult<-NULL
-    scPagwas_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"scPagwastop1000/enrichment_results_wg_result.txt"),header = T)
-    a1<-0
-    a2<-sum(scPagwas_goresult$FDR<0.01)
-    a3<-0
-    a4<-sum(scPagwas_goresult$FDR<0.001)
-    a5<-0
-    a6<-sum(scPagwas_goresult$FDR<0.0001)
-    a7<-0
-    a8<-sum(scPagwas_goresult$FDR<0.00001)
-    
-  }else{
-    magma_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"magmatop1000/enrichment_results_wg_result.txt"),header = T)
-    scPagwas_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"scPagwastop1000/enrichment_results_wg_result.txt"),header = T)
-    a1<-sum(magma_goresult$FDR<0.01)
-    a2<-sum(scPagwas_goresult$FDR<0.01)
-    a3<-sum(magma_goresult$FDR<0.001)
-    a4<-sum(scPagwas_goresult$FDR<0.001)
-    a5<-sum(magma_goresult$FDR<0.0001)
-    a6<-sum(scPagwas_goresult$FDR<0.0001)
-    a7<-sum(magma_goresult$FDR<0.00001)
-    a8<-sum(scPagwas_goresult$FDR<0.00001)
-    
-  }
-  
-  go_df <- data.frame(magma=c(a1,a3,a5,a7),scPagwas=c(a2,a4,a6,a8),FDR=c("1e-02","1e-03","1e-04","1e-05"))
-  ##plot
-  gg_go_df<-melt(go_df,id.vars = "FDR")
-  gg_go_df$FDR<-factor(gg_go_df$FDR,levels = c("1e-05","1e-04","1e-03","1e-02"))
-  
-  setwd("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/")
-  pdf(paste0("dorplot_",i,"_goranalysis_allgenes.pdf"),height =3,width=5)
-  print(ggdotchart(gg_go_df, x="FDR", y="value", color = "variable",          
-             palette = c("#1F4690","#FFA500"), #
-             sorting = "none",    # 
-             size =1,dot.size=5,
-             rotate = T,label="value",
-             add = "segments", #
-             main=i, ylab="Numbers of significant GO terms",
-             ggtheme = theme_pubr()) )
-  
-  dev.off()
-  
-})
-
-lapply(traits,function(i){
- if(i=="MeanCorpuscularHemoglobin"){
-    magma_goresult<-NULL
-    scPagwas_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"scPagwastop1000/enrichment_results_wg_result.txt"),header = T)
-    write.csv(scPagwas_goresult,file=paste0("E:/OneDrive/GWAS_Multiomics/Manuscripts/Supplementfiles/top1000goanalysis/",i,"scPagwas_top1000genes_goresult.csv"))
-
-  }else{
-    magma_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"magmatop1000/enrichment_results_wg_result.txt"),header = T)
-    scPagwas_goresult<-read.delim(paste0("E:/OneDrive/GWAS_Multiomics/Compare/goanalysis/",i,"scPagwastop1000/enrichment_results_wg_result.txt"),header = T)
-        write.csv(magma_goresult,file=paste0("E:/OneDrive/GWAS_Multiomics/Manuscripts/Supplementfiles/top1000goanalysis/",i,"magma_top1000genes_goresult.csv"))
-        write.csv(scPagwas_goresult,file=paste0("E:/OneDrive/GWAS_Multiomics/Manuscripts/Supplementfiles/top1000goanalysis/",i,"scPagwas_top1000genes_goresult.csv"))
-
-}
-})
-
-```
-
-#### Enrichment the ranked gene
-
-```R
-
-library(scPagwas)
-suppressMessages(library(Seurat))
-traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/")
-for(i in traits){
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS/scPagwas.magmatopgenes_",i,".RData"))
-names(topgene)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
-}
-
-load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas_v1.9.1.RData"))
-geneList<-Pagwas@misc$gene_heritability_correlation[,1]
-geneList=sort(geneList,decreasing = T) 
-select_cells<-c("01_HSC","02_Early.Eryth","05_CMP.LMPP","09_pDC","12_CD14.Mono.2","19_CD8.N")
-set.seed(1234)
-a_list<-lapply(select_cells,function(x){
-  a<-subset(Pagwas,idents =x) 
-  a<-a[,sample(1:ncol(a),500)]
-    return(a)
-})
-Pagwas_rank<-merge(x = a_list[[1]],y =  a_list[2:length(select_cells)])
-save(Pagwas_rank,file="Pagwas_rank.RData")
-data_mat<- GetAssayData(Pagwas_rank,assay ="RNA")
-##################
-a<-apply(data_mat,1,mean)
-a<-sort(a,decreasing=T)                
-rank_gene<-names(a)
-save(rank_gene,file="expr_rank_gene.RData")
-g1<-intersect(rank_gene[1:(1/2*length(a))],topgene$scPagwastop1000)
-g2<-intersect(rank_gene[(1/2*length(a)):length(a)],topgene$scPagwastop1000)
-
-m1<-intersect(rank_gene[1:(1/2*length(a))],topgene$magmatop1000)
-m2<-intersect(rank_gene[(1/2*length(a)):length(a)],topgene$magmatop1000)
-
-gene_list<-list(g1,g2,m1,m2)
-names(gene_list)<-c("g1","g2","m1","m2")
-lapply(names(gene_list), function(x){
-  write.csv(gene_list[[x]],file=paste0(x,"split2_gene.csv"),row.names = F)
-})
-write.csv(degene,file="de_gene_monocyte.csv")
-```
-
-#### Ranked gene visualize
-
-```R
-setwd("E:/OneDrive/GWAS_Multiomics/Compare/5.16compareresult")
-load("D:/OneDrive/GWAS_Multiomics/Compare/goanalysis/expr_rank_gene.RData")
-load("D:/OneDrive/GWAS_Multiomics/Compare/goanalysis/Lymphocytecount3_genes_split2.RData")
-
-percent1<-c(length(c(gene_list$g1))/length(unlist(gene_list[1:2])),
-            length(c(gene_list$g2))/length(unlist(gene_list[1:2]))
-)
-percent2<-c(length(c(gene_list$m1))/length(unlist(gene_list[3:4])),
-            length(c(gene_list$m2))/length(unlist(gene_list[3:4]))
-)
-
-b1<-rep(0,length(rank_gene))
-b1[rank_gene %in% unlist(gene_list[1:2])]<-1
-b2<-rep(0,length(rank_gene))
-b2[rank_gene %in% unlist(gene_list[3:4])]<-1
-
-a<-c(rep(1,length(rank_gene)*0.5),rep(2,length(rank_gene)*0.5))
-rank_df<-data.frame(rank_gene,a,b1,b2)
-
-library(ggpubr)
-df <- data.frame(
-  group = c("scPagwas","others"),
-  value = c(percent1[1],1-percent1[1]))
-
-p1<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#FFE194", "#4C4C6D") )
-df <- data.frame(
-  group = c("scPagwas","others"),
-  value = c(percent1[2],1-percent1[2]))
-
-p2<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#FFE194", "#4C4C6D")  )  
-df <- data.frame(
-  group = c("scPagwas","others"),
-  value = c(percent2[1],1-percent2[1]))
-p3<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#FFE194", "#4C4C6D")  )  
-
-df <- data.frame(
-  group = c("scPagwas","others"),
-  value = c(percent2[2],1-percent2[2]))
-p4<-ggdonutchart(df, "value", label = "group",
-                 fill = "group", color = "white",
-                 palette = c("#FFE194", "#4C4C6D")  )  
-setwd("D:/OneDrive/GWAS_Multiomics/Compare")
-
-pdf("percent.for.toprankgenes.lymphocyte.pdf",width = 10,height = 10)
-ggpubr::ggarrange(p1,p2,p3,p4,nrow = 2,ncol = 4)
-dev.off()
-
-setwd("D:/OneDrive/GWAS_Multiomics/Compare")
-library('ComplexHeatmap')
-library(circlize)
-col_fun = colorRamp2(c(0, 1), c("#F6F6F6", "#161D6F"))
-col_fun(seq(0, 1))
-
-pdf("lymphocyte.heatmap_rank_PAGWASgene.pdf",width = 2)
-Heatmap(data.matrix(rank_df$b1),
-        col = col_fun,
-        #left_annotation = ha, 
-        cluster_columns = F,
-        cluster_rows = F,
-        color_space="HLS",
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        #name = "-log2(p)",
-        #row_order =order(rdf$types),
-        show_row_names=T,
-        show_column_names=T
-        #row_split=rdf$phenotypes
-)
-dev.off()
-
-pdf("lymphocyte.heatmap_rank_MAGMAgene.pdf",width = 2)
-Heatmap(data.matrix(rank_df$b2),
-        col = col_fun,
-        #left_annotation = ha, 
-        cluster_columns = F,
-        cluster_rows = F,
-        color_space="HLS",
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        #name = "-log2(p)",
-        #row_order =order(rdf$types),
-        show_row_names=T,
-        show_column_names=T
-        #row_split=rdf$phenotypes
-)
-dev.off()
-
-```
-
-### 4.Pheatmap: BMMC mean score for celltypes
-
-Figure4B
-
-```R
-library(scPagwas)
- library(ggplot2)
- suppressMessages(library(Seurat))
- suppressMessages(library("dplyr"))
-
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test")
-Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/NM_Healthy_pbmc.rds")
-
- traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","MeanCorpuscularHemoglobin","MeanCorpusVolume")
-
- i<-traits[1]
-setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS")
- for(i in traits){
- load(paste0(i,"_meta.data.RData"))
-
- }
-setwd("E:/OneDrive/GWAS_Multiomics/Compare")
-load("scPagwas_Seu_Healthy_resultlist.RData")
-
-scPagwas_Hema_p2<-as.data.frame(lapply(result_list,function(df){
-  a<- -log2(df)
-  a[which(a<4.32)]<-0
-  return(a)
-}))
-rownames(scPagwas_Hema_p)<- rownames(result_list)
-
-library('ComplexHeatmap')
-library(circlize)
-col_fun = colorRamp2(c(0, 10), c("#FBF8F1", "#FC4F4F"))
-col_fun(seq(0, 10))
-#magma_pbmc_p
-
-pdf("E:/OneDrive/GWAS_Multiomics/Compare/Figure_scPagwas_hema_bloodtraits1.pdf",
-    height =8,width =7)
-Heatmap(as.matrix(scPagwas_Hema_p),
-        col = col_fun,
-        #left_annotation = ha, 
-        cluster_columns = T,
-        cluster_rows = T,
-        color_space="HLS",
-        border=T,
-        row_gap = unit(0.25, "mm"),
-        show_parent_dend_line=T,
-        name = "-log2(p)",
-        #row_order =order(rdf$types),
-        show_row_names=T,
-        show_column_names=T
-        #row_split=rdf$phenotypes
-)
-dev.off()
-```
-
-
-

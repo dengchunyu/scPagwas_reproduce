@@ -80,7 +80,6 @@ gwas_PD_test<-gwas_PD_test[sample(1:nrow(gwas_PD_test),1000000),]
 ##use all gwas to run scpagwas
 Pagwas <- Pagwas_main (Pagwas = NULL,
                        gwas_data = gwas_PD_test,
-                       add_eqtls="FALSE",
                        block_annotation = block_annotation,
                        Single_data = mouse_brain_seu2,
                        Pathway_list= genes.by.pathway_kegg,
@@ -100,7 +99,7 @@ Pagwas<-scPagwas_main(Pagwas =Pagwas,
                      celltype=T,
                      singlecell=F,
                      Pathway_list=Genes_by_pathway_kegg,
-                     output.dirs=paste0(i,"_pbmc_scPagwasv1.9"),
+                     output.dirs=paste0(i,"_pbmc_scPagwas"),
                      ncores=1,
                      block_annotation = block_annotation,
                      chrom_ld = chrom_ld)

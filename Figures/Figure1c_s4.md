@@ -2,15 +2,12 @@
 
 # scPagwas data density and sparsity
 
-
-
 ## Density for Pathway PCA and single cell 
 
-**Supplementary Figure S1**
+Supplementary Figure S4
 
 ```R
-
-load("E:/OneDrive/GWAS_Multiomics/compare/Hema_test2/Lymphocytecount3_Hema_bmmc_scPagwas_v1.9.1.RData")
+load("E:/OneDrive/GWAS_Multiomics/compare/Hema_test2/Lymphocytecount3_Hema_bmmc_scPagwas.RData")
 pca_scCell_mat <- GetAssayData(Pagwas,assay = "scPagwasPaPca")
 median<- apply(pca_scCell_mat,1,median)
 gg_pca<-data.frame(median=median,pathway=rownames(pca_scCell_mat))
@@ -42,7 +39,7 @@ dev.off()
 
 ## Variance for pathway and gene
 
-**Supplementary Figure S2**
+**Figure 1C**
 
 ```R
 library("ggplot2")
@@ -135,7 +132,7 @@ dev.off()
 ```
 
 ## scRNA-seq and pathway data sparsity proportion plot
-
+Supplementary Figure S4
 ```R
 library("ggplot2")
 library(ggpubr)

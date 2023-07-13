@@ -63,23 +63,11 @@ Pagwas<-scPagwas_main(Pagwas = NULL,
                      seruat_return=T,
                      celltype=T,
                      ncores = 10)
-save(Pagwas,file="Pagwas_seu_GSE138852_v1.10.RData")
-load("Pagwas_seu_GSE138852_v1.10.RData")
-#删除CellScalepValue，CellScaleqValue
-Pagwas@meta.data[,c("CellScalepValue","CellScaleqValue")]<-NULL
- scPagwas_topgenes <- names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation, decreasing = T), ])[1:500]
- correct_pdf<-Get_CorrectBg_p(Single_data=Pagwas,
-                                 scPagwas.TRS.Score=Pagwas$scPagwas.TRS.Score1,
-                                 iters_singlecell=200,
-                                 n_topgenes=500,
-                                 scPagwas_topgenes=scPagwas_topgenes
-    )
-Pagwas$Random_Correct_BG_p <- correct_pdf$pooled_p
-Pagwas$Random_Correct_BG_adjp <- correct_pdf$adj_p
-Pagwas$Random_Correct_BG_z <- correct_pdf$pooled_z
+save(Pagwas,file="Pagwas_seu_GSE138852.RData")
+
 scPagwas_Visualization(Single_data =Pagwas,
                                    p_thre = 0.05,
-                                   output.dirs = "GSE138852AD_outputv1.10",
+                                   output.dirs = "GSE138852AD_output",
                                    FigureType = "umap",
                                    width = 7,
                                    height = 7,
@@ -88,7 +76,7 @@ scPagwas_Visualization(Single_data =Pagwas,
                                    highColor = "#EBE645",
                                    size = 0.5,
                                    do_plot = TRUE)
-saveRDS(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/ad_test/Pagwas_seu_GSE138852_v1.10.rds")
+saveRDS(Pagwas,file="/share/pub/dengcy/GWAS_Multiomics/ad_test/Pagwas_seu_GSE138852.rds")
 ```
 
 ## 3. GSE160936
@@ -113,8 +101,6 @@ setwd("/share/pub/dengcy/GWAS_Multiomics/ad_test/5.16test")
                      ncores=1,
                      Pathway_list=Genes_by_pathway_kegg,
                      chrom_ld = chrom_ld)
-
-
 ```
 
 ## 4.magma
@@ -153,8 +139,6 @@ magma_genes<-read.table("/share/pub/dengcy/GWAS_Multiomics/ad_test/annotated_10k
 magma_genes<-magma_genes[order(magma_genes$P,decreasing=F),]
 scPagwas_genes<-names(Pagwas@misc$gene_heritability_correlation[order(Pagwas@misc$gene_heritability_correlation,decreasing=T),])
 
-
-
 library(org.Hs.eg.db)
 library(dplyr)
 library(data.table)
@@ -185,8 +169,9 @@ write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"))
 
 b<-data.frame(index=colnames(Pagwas),const=rep(1,ncol(Pagwas)))
 write.table( b,file="AD_cov.cov",sep="\t",row.names=F,quote=F,)
+```
 
-
+```python
 #####python
 import scdrs
 from scipy import stats
