@@ -1,14 +1,10 @@
-[toc]
 
-<html>
-<!--在这里插入内容-->
-</html>
-GWAS summary statistics and fine-mapping analysis 
+# GWAS summary statistics and fine-mapping analysis 
 Blood cell traits. 
 Summary statistics of 22 blood cell traits from Blood Cell Consortium 2 (BCX2) were processed 
 as previously described
 
-### blood traits：
+## blood traits：
 Data and Code Availability Summary statistics are available to download from: ftp://ftp.sanger.ac.uk/pub/project/humgen/summary_statistics/UKBB_blood_cell_traits/ for UK Biobank and http://www.mhi-humangenetics.org/en/resources for the meta-analysis. The accession numbers for the UK Biobank summary statistics reported in this paper are: 
 
 - basophil cell count

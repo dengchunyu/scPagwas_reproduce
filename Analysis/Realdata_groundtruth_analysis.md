@@ -1,5 +1,5 @@
 # Monocytecount Realdata_groundtruth
-
+the real data groudtruth data are produce from BMMC and PBMC data, we mainly used the BMMC groundtruth data.
 ## 一， BMMC
 
 ### 1.Select the example celltypes for compare
@@ -215,9 +215,6 @@ df_score.to_csv("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth/mono.bmmc.100
 ```
 
 
-
-
-
 ### 8.Compare with other score methods
 
 ```R
@@ -264,7 +261,6 @@ library(AUCell)
 setwd("/share/pub/dengcy/GWAS_Multiomics/realgroundtruth")
 
 load('Pagwas_groundtruth_bmmc_monocyte_v10.RData')
-##输出mgt文件
 
 gwass<-c('monocytecount')
 methods<-c('smultixcan', 'spredixcan' ,'TWAS')
@@ -282,8 +278,6 @@ out<-file.path(glue::glue("/share/pub/dengcy/GWAS_Multiomics/MultiMethods/{metho
 write.table(a,file=out,append = T,col.names = F,row.names = F,quote = F,sep = "\t")
 	}
 }
-
-##计算得分
 
 counts = load_counts()
 se_oj = CreateSeuratObject(counts)
