@@ -511,14 +511,14 @@ suppressMessages(library(Seurat))
 library(org.Hs.eg.db)
 library(dplyr)
 
-traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
+traits<-c("eosinophilcount","basophilcount","LymphocytePercent","Lymphocytecount3","Lymphocytecount","monocytecount","neutrophilcount","WhiteBloodCellcount","Hemoglobinconcen","MeanCorpuscularHemoglobin","MeanCorpusVolume")
 
 Single_data<-readRDS("/share/pub/dengcy/GWAS_Multiomics/singlecelldata/Seu_Hema_data.rds")
 g2s=toTable(org.Hs.egSYMBOL)
 setwd("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/scDRS")
 for(i in traits){
   print(i)
-  load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
+load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
   Celltype_anno<-Pagwas@misc$Celltype_anno
   magma_genes<-read.table(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/magma/",i,"_10kbup_10down.genes.out"),header=T)
   #save(magma_genes,file=paste0(i,"_magma_genes.RData"))
@@ -545,7 +545,6 @@ for(i in traits){
   a<-data.frame(genes=c(scPagwastop1000,magmatop1000,scPagwastop500,magmatop500))
   rownames(a)<-c("scPagwastop1000","magmatop1000","scPagwastop500","magmatop500")
   write.csv(a,file=paste0("scPagwas.magmatopgenes_scRDS",i,".csv"))
-
   meta.data<-data.frame(scPagwas_score=Pagwas$scPagwas_score[colnames(Single_data)],
   CellsrankPvalue=Pagwas$CellsrankPvalue[colnames(Single_data),"pValueHigh"]
                      )
@@ -554,6 +553,11 @@ for(i in traits){
   save(meta.data,file=paste0(i,"_meta.data.RData"))
     
   }
+
+for(i in traits){
+  print(i)
+load(paste0("/share/pub/dengcy/GWAS_Multiomics/compare/Hema_test/",i,"_Hema_bmmc_scPagwas.RData"))
+Pagwas$scPagwas_score
 
 ###############################
 for(i in traits){
